@@ -1,5 +1,6 @@
 /* ─── RESET & VARIABLES ──────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.metric-value, .banner-val, .dinero-monto, .tab-day, .dia-g-num, .pcard-capital, .desembolso-monto, .mes-monto, .hist-monto, .consig-monto { font-feature-settings: "zero" 0; }
 
 :root {
   --bg: #F5F3EE;
@@ -270,13 +271,12 @@ body {
   border-radius: 7px;
   margin-bottom: 4px;
   border: 1px solid var(--border);
-  border-left: 3px solid transparent;
 }
-.mes-row.pagado    { background: rgba(10,94,72,.04);   border-color: rgba(24,145,106,.2);  border-left-color: var(--green-mid); }
-.mes-row.pendiente { background: rgba(201,125,10,.04); border-color: rgba(201,125,10,.22); border-left-color: var(--amber-mid); }
-.mes-row.vencido   { background: rgba(192,48,48,.04);  border-color: rgba(192,48,48,.2);   border-left-color: var(--red-mid); }
-.mes-row.parcial   { background: rgba(24,62,122,.04);  border-color: rgba(24,62,122,.2);   border-left-color: var(--blue); }
-.mes-row.sin-cobro { background: transparent;          border-color: var(--border);         border-left-color: var(--border2); }
+.mes-row.pagado    { background: rgba(10,94,72,.04);   border-color: rgba(24,145,106,.2); }
+.mes-row.pendiente { background: rgba(201,125,10,.04); border-color: rgba(201,125,10,.22); }
+.mes-row.vencido   { background: rgba(192,48,48,.04);  border-color: rgba(192,48,48,.2); }
+.mes-row.parcial   { background: rgba(24,62,122,.04);  border-color: rgba(24,62,122,.2); }
+.mes-row.sin-cobro { background: transparent;          border-color: var(--border); }
 
 .mes-left  { display: flex; align-items: center; gap: 8px; }
 .mes-right { display: flex; align-items: center; gap: 5px; }
