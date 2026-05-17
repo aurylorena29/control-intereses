@@ -384,7 +384,8 @@ function getMesesPrestamo(p){
   const esOculto = (m,y) => ocultos.some(o => o.mes===m && o.anio===y);
   const inicio   = new Date(p.fecha_inicio+'T00:00:00');
   const hoyDate  = new Date();
-  let y = inicio.getFullYear(), m = inicio.getMonth()+1;
+  let y = inicio.getFullYear(), m = inicio.getMonth()+2;
+  if(m>12){ m=1; y++; }
   const hy = hoyDate.getFullYear(), hm = hoyDate.getMonth()+1;
   const result = [];
   while(y < hy || (y===hy && m<=hm)){
