@@ -476,7 +476,7 @@ function renderContenido(){
       const mesesHtml=meses.map(({mes,anio,cobro})=>{
         const pagado=cobro&&cobro.estado==='pagado';
         const clase=cobro?cobro.estado:'sin-cobro';
-        const monto=cobro?cobro.monto:p.tasa_mensual;
+        const monto=cobro?cobro.monto:getCuotaParaMes(p,mes,anio);
         const delBtn=cobro
           ?`<button class="icon-btn" onclick="eliminarCobro(${p.id},'${cobro.id}')" title="Eliminar mes"><i class="ti ti-x"></i></button>`
           :`<button class="icon-btn" onclick="ocultarMes(${p.id},${mes},${anio})" title="Ocultar mes"><i class="ti ti-x"></i></button>`;
@@ -538,6 +538,17 @@ function renderContenido(){
 }
 
 // ── Helpers de meses ────────────────────────────────────────────
+function getCuotaParaMes(p, mes, anio){
+  const desembolsos=p.desembolsos||[{monto:p.capital,fecha:p.fecha_inicio}];
+  // Solo suma los desembolsos que ocurrieron en o antes de este mes
+  const capital=desembolsos.filter(d=>{
+    const df=new Date(d.fecha+'T00:00:00');
+    const dy=df.getFullYear(), dm=df.getMonth()+1;
+    return dy<anio||(dy===anio&&dm<=mes);
+  }).reduce((s,d)=>s+d.monto,0);
+  return Math.round(capital*(p.tasa_pct||2)/100);
+}
+
 function getMesesPrestamo(p){
   const ocultos=p.mesesOcultos||[];
   const esOculto=(m,y)=>ocultos.some(o=>o.mes===m&&o.anio===y);
@@ -572,7 +583,7 @@ async function toggleCobro(pid,mes,anio){
   } else {
     const dia=diaCobro(p);
     const fc=anio+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
-    p.cobros.push({id:'c'+S.nextId++,mes,anio,monto:p.tasa_mensual,estado:'pagado',fecha_cobro:fc});
+    p.cobros.push({id:'c'+S.nextId++,mes,anio,monto:getCuotaParaMes(p,mes,anio),estado:'pagado',fecha_cobro:fc});
   }
   render();
   await guardarTodo();
@@ -613,7 +624,7 @@ async function agregarMesSiguiente(pid){
   }
   const dia=diaCobro(p);
   const fc=ny+'-'+String(nm).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
-  p.cobros.push({id:'c'+S.nextId++,mes:nm,anio:ny,monto:p.tasa_mensual,estado:'pendiente',fecha_cobro:fc});
+  p.cobros.push({id:'c'+S.nextId++,mes:nm,anio:ny,monto:getCuotaParaMes(p,nm,ny),estado:'pendiente',fecha_cobro:fc});
   render();
   await guardarTodo();
 }
