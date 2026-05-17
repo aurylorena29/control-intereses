@@ -539,12 +539,14 @@ function renderContenido(){
 
 // ── Helpers de meses ────────────────────────────────────────────
 function getCuotaParaMes(p, mes, anio){
-  const desembolsos=p.desembolsos||[{monto:p.capital,fecha:p.fecha_inicio}];
-  // Solo suma los desembolsos que ocurrieron en o antes de este mes
+  const desembolsos=p.desembolsos||[{monto:p.capital,fecha:p.fecha_inicio,inicial:true}];
   const capital=desembolsos.filter(d=>{
     const df=new Date(d.fecha+'T00:00:00');
     const dy=df.getFullYear(), dm=df.getMonth()+1;
-    return dy<anio||(dy===anio&&dm<=mes);
+    // Desembolso inicial: aplica desde su mismo mes
+    // Desembolsos adicionales: aplican desde el mes SIGUIENTE
+    if(d.inicial) return dy<anio||(dy===anio&&dm<=mes);
+    else          return dy<anio||(dy===anio&&dm<mes);
   }).reduce((s,d)=>s+d.monto,0);
   return Math.round(capital*(p.tasa_pct||2)/100);
 }
@@ -870,7 +872,7 @@ async function guardarPrestamo(){
   S.prestamos.push({
     id,responsableId:rid,desc:'Préstamo',tipo:'Intereses',capital,
     fecha_inicio:fecha,tasa_mensual:cuota,tasa_pct:tasa,
-    desembolsos:[{id:'d'+S.nextId++,monto:capital,fecha}],
+    desembolsos:[{id:'d'+S.nextId++,monto:capital,fecha,inicial:true}],
     consignaciones:[{id:S.nextId++,desc:'Ingreso inicial',monto:capital,fecha}],
     cobros:[]
   });
@@ -881,18 +883,19 @@ async function guardarPrestamo(){
 // ── Modal: Agregar capital a préstamo existente ───────────────────
 function abrirAgregarCapital(pid){
   const p=S.prestamos.find(x=>x.id===pid);
-  const hoy=new Date().toISOString().split('T')[0];
+  const diaOriginal=parseInt(p.fecha_inicio.split('-')[2]);
   const tasa=p.tasa_pct||2;
   modal('Agregar más plata',
-    '<p style="font-size:13px;color:var(--text2);margin-bottom:14px">Capital actual: <strong style="font-family:\'IBM Plex Mono\',monospace">'+fmt(p.capital)+'</strong> · Tasa: '+tasa+'%</p>'+
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:10px">Capital actual: <strong style="font-family:\'IBM Plex Mono\',monospace">'+fmt(p.capital)+'</strong> · Tasa: '+tasa+'%</p>'+
+    '<div class="dia-hint-box" style="margin-bottom:12px"><i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:5px"></i>La fecha debe ser día <strong>'+diaOriginal+'</strong> de cualquier mes — si es otro día es un préstamo nuevo</div>'+
     '<div class="form-group"><label>Monto adicional ($)</label>'+
       '<input id="ca-monto" type="number" placeholder="5000000" oninput="actualizarCuotaAdicional('+pid+')">'+
     '</div>'+
     '<div class="form-group"><label>Fecha del desembolso</label>'+
-      '<input id="ca-fecha" type="date" value="'+hoy+'">'+
+      '<input id="ca-fecha" type="date" oninput="actualizarCuotaAdicional('+pid+')">'+
     '</div>'+
     '<div style="background:var(--surface2);border-radius:7px;padding:9px 12px;font-size:13px;" id="ca-preview">'+
-      'Nuevo capital: — · Nueva cuota: —'+
+      'Los intereses del nuevo monto aplican desde el mes siguiente al desembolso'+
     '</div>',
     '<button class="btn-cancel" onclick="cerrar()">Cancelar</button>'+
     '<button class="btn-save" onclick="guardarCapitalAdicional('+pid+')">Agregar</button>'
@@ -916,7 +919,13 @@ async function guardarCapitalAdicional(pid){
   const fecha=document.getElementById('ca-fecha').value;
   if(!monto||!fecha){alert('Completa monto y fecha');return;}
   const p=S.prestamos.find(x=>x.id===pid);
-  if(!p.desembolsos) p.desembolsos=[{id:'d'+S.nextId++,monto:p.capital,fecha:p.fecha_inicio}];
+  const diaOriginal=parseInt(p.fecha_inicio.split('-')[2]);
+  const diaNew=parseInt(fecha.split('-')[2]);
+  if(diaOriginal!==diaNew){
+    alert('El día '+diaNew+' no coincide con el día de cobro ('+diaOriginal+'). Crea un nuevo préstamo para una fecha diferente.');
+    return;
+  }
+  if(!p.desembolsos) p.desembolsos=[{id:'d'+S.nextId++,monto:p.capital,fecha:p.fecha_inicio,inicial:true}];
   p.desembolsos.push({id:'d'+S.nextId++,monto,fecha});
   p.capital=p.desembolsos.reduce((s,d)=>s+d.monto,0);
   p.tasa_mensual=Math.round(p.capital*(p.tasa_pct||2)/100);
