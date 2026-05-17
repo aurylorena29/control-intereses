@@ -137,6 +137,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .icon-btn:hover { background: var(--red-bg); color: var(--red-mid); }
 .btn-add-mes { width: 100%; margin-top: 7px; padding: 7px; border: 1px dashed var(--border2); border-radius: 7px; background: none; font-family: inherit; font-size: 12px; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s; }
 .btn-add-mes:hover { border-color: var(--green-mid); color: var(--green-mid); background: var(--green-bg); }
+.desembolsos-wrap { margin-top: 5px; display: flex; flex-direction: column; gap: 2px; }
+.desembolso-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 2px 0; }
+.desembolso-monto { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--text); }
+.desembolso-fecha { color: var(--text3); }
 
 .pcard-footer { border-top: 1px solid var(--border); display: flex; }
 .foot-btn { flex: 1; padding: 9px; font-size: 12px; font-family: inherit; border: none; background: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500; transition: background .12s; }
@@ -490,6 +494,14 @@ function renderContenido(){
         </div>`;
       }).join('') || '<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin meses registrados</div>';
 
+      const desembolsos=p.desembolsos&&p.desembolsos.length>1
+        ?'<div class="desembolsos-wrap">'+p.desembolsos.map(d=>
+            '<div class="desembolso-item">'+
+              '<span class="desembolso-fecha"><i class="ti ti-corner-down-right" style="font-size:10px;margin-right:3px;color:var(--text3)"></i>'+fechaDisp(d.fecha)+'</span>'+
+              '<span class="desembolso-monto">'+fmt(d.monto)+'</span>'+
+            '</div>'
+          ).join('')+'</div>'
+        :'';
       return`<div class="pcard">
         <div class="pcard-head">
           <div class="dia-grande">
@@ -499,7 +511,8 @@ function renderContenido(){
           <div class="pcard-info">
             <div class="pcard-capital">${fmt(p.capital)}</div>
             <div class="pcard-cuota">Cuota: ${fmt(p.tasa_mensual)} / mes</div>
-            <div class="pcard-desde"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
+            ${desembolsos}
+            <div class="pcard-desde" style="margin-top:4px"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
           </div>
         </div>
         <div class="pcard-body">
@@ -507,6 +520,7 @@ function renderContenido(){
           <button class="btn-add-mes" onclick="agregarMesSiguiente(${p.id})"><i class="ti ti-plus" style="font-size:12px"></i> Agregar mes</button>
         </div>
         <div class="pcard-footer">
+          <button class="foot-btn" onclick="abrirAgregarCapital(${p.id})"><i class="ti ti-cash" style="font-size:13px"></i> Agregar plata</button>
           <button class="foot-btn danger" onclick="eliminarPrestamo(${p.id})"><i class="ti ti-trash" style="font-size:13px"></i> Eliminar</button>
         </div>
       </div>`;
@@ -845,9 +859,56 @@ async function guardarPrestamo(){
   S.prestamos.push({
     id,responsableId:rid,desc:'Préstamo',tipo:'Intereses',capital,
     fecha_inicio:fecha,tasa_mensual:cuota,tasa_pct:tasa,
+    desembolsos:[{id:'d'+S.nextId++,monto:capital,fecha}],
     consignaciones:[{id:S.nextId++,desc:'Ingreso inicial',monto:capital,fecha}],
     cobros:[]
   });
+  cerrar(); render();
+  await guardarTodo();
+}
+
+// ── Modal: Agregar capital a préstamo existente ───────────────────
+function abrirAgregarCapital(pid){
+  const p=S.prestamos.find(x=>x.id===pid);
+  const hoy=new Date().toISOString().split('T')[0];
+  const tasa=p.tasa_pct||2;
+  modal('Agregar más plata',
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:14px">Capital actual: <strong style="font-family:\'IBM Plex Mono\',monospace">'+fmt(p.capital)+'</strong> · Tasa: '+tasa+'%</p>'+
+    '<div class="form-group"><label>Monto adicional ($)</label>'+
+      '<input id="ca-monto" type="number" placeholder="5000000" oninput="actualizarCuotaAdicional('+pid+')">'+
+    '</div>'+
+    '<div class="form-group"><label>Fecha del desembolso</label>'+
+      '<input id="ca-fecha" type="date" value="'+hoy+'">'+
+    '</div>'+
+    '<div style="background:var(--surface2);border-radius:7px;padding:9px 12px;font-size:13px;" id="ca-preview">'+
+      'Nuevo capital: — · Nueva cuota: —'+
+    '</div>',
+    '<button class="btn-cancel" onclick="cerrar()">Cancelar</button>'+
+    '<button class="btn-save" onclick="guardarCapitalAdicional('+pid+')">Agregar</button>'
+  );
+}
+
+function actualizarCuotaAdicional(pid){
+  const p=S.prestamos.find(x=>x.id===pid);
+  const adicional=parseFloat(document.getElementById('ca-monto')?.value)||0;
+  const tasa=p.tasa_pct||2;
+  const nuevoCapital=p.capital+adicional;
+  const nuevaCuota=Math.round(nuevoCapital*tasa/100);
+  const el=document.getElementById('ca-preview');
+  if(el) el.innerHTML=adicional>0
+    ?'Nuevo capital: <strong style="font-family:\'IBM Plex Mono\',monospace">'+fmt(nuevoCapital)+'</strong> · Nueva cuota: <strong style="font-family:\'IBM Plex Mono\',monospace;color:var(--green)">'+fmt(nuevaCuota)+'</strong>'
+    :'Nuevo capital: — · Nueva cuota: —';
+}
+
+async function guardarCapitalAdicional(pid){
+  const monto=parseFloat(document.getElementById('ca-monto').value)||0;
+  const fecha=document.getElementById('ca-fecha').value;
+  if(!monto||!fecha){alert('Completa monto y fecha');return;}
+  const p=S.prestamos.find(x=>x.id===pid);
+  if(!p.desembolsos) p.desembolsos=[{id:'d'+S.nextId++,monto:p.capital,fecha:p.fecha_inicio}];
+  p.desembolsos.push({id:'d'+S.nextId++,monto,fecha});
+  p.capital=p.desembolsos.reduce((s,d)=>s+d.monto,0);
+  p.tasa_mensual=Math.round(p.capital*(p.tasa_pct||2)/100);
   cerrar(); render();
   await guardarTodo();
 }
