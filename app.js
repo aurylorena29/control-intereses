@@ -16,7 +16,8 @@ const COLORES_RESP = [
 // ── Estado local ─────────────────────────────────────────────────
 let S = {
   responsables: [], prestamos: [], dineroLibre: [],
-  nextId: 1, nextDineroId: 1, tabActivo: 'todos', loaded: false,
+  nextId: 1, nextDineroId: 1, tabActivo: 'lista',
+  filtroQuincena: 'todos', filtroResp: null, loaded: false,
 };
 
 // ── API Google Sheets ─────────────────────────────────────────────
@@ -86,20 +87,12 @@ function diasHoy(f)   { return Math.round((new Date(f+'T00:00:00') - HOY) / 8640
 function diaCobro(p)  { return parseInt(p.fecha_inicio.split('-')[2]); }
 function colorResp(idx){ return COLORES_RESP[idx % COLORES_RESP.length]; }
 
-function getDias(){
-  const dias = new Set();
-  S.prestamos.forEach(p => dias.add(diaCobro(p)));
-  return Array.from(dias).sort((a,b) => a-b);
-}
-
 function prestsFiltrados(){
-  if(S.tabActivo === 'todos') return S.prestamos;
-  return S.prestamos.filter(p => diaCobro(p) === S.tabActivo);
-}
-
-function pendientesDia(dia){
-  return S.prestamos.filter(p => diaCobro(p) === dia)
-    .reduce((s,p) => s + p.cobros.filter(c => c.estado !== 'pagado').length, 0);
+  let list = S.prestamos;
+  if(S.filtroQuincena === 'primera') list = list.filter(p => diaCobro(p) <= 15);
+  if(S.filtroQuincena === 'segunda') list = list.filter(p => diaCobro(p) > 15);
+  if(S.filtroResp !== null) list = list.filter(p => p.responsableId === S.filtroResp);
+  return list;
 }
 
 // ── Stats ────────────────────────────────────────────────────────
@@ -188,27 +181,35 @@ function renderDinero(){
 }
 
 function renderTabs(){
-  const dias = getDias();
-  const totalPend = S.prestamos.reduce((s,p) => s+p.cobros.filter(c=>c.estado!=='pagado').length, 0);
-  let html=`<button class="tab-btn${S.tabActivo==='todos'?' active':''}" onclick="setTab('todos')">
-    <span class="tab-day">Todos</span>
-  </button>`;
-  dias.forEach(dia => {
-    html+=`<button class="tab-btn${S.tabActivo===dia?' active':''}" onclick="setTab(${dia})">
-      <span class="tab-day">Día ${dia}</span>
-    </button>`;
-  });
-  html+=`<button class="tab-btn${S.tabActivo==='historial'?' active':''}" onclick="setTab('historial')">
-    <span class="tab-day" style="font-size:20px"><i class="ti ti-history" style="font-size:18px;vertical-align:-2px"></i></span>
-    <span class="tab-sub">Historial</span>
-  </button>`;
-  document.getElementById('tabs').innerHTML = html;
+  const quincenas = [
+    {key:'todos',    label:'Todos'},
+    {key:'primera',  label:'1ª quincena'},
+    {key:'segunda',  label:'2ª quincena'},
+  ];
+  const qHtml = quincenas.map(q =>
+    `<button class="chip${S.filtroQuincena===q.key?' active':''}" onclick="setFiltroQuincena('${q.key}')">${q.label}</button>`
+  ).join('');
+  const histHtml = `<button class="chip${S.tabActivo==='historial'?' active':''}" onclick="setTab('historial')"><i class="ti ti-history" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Historial</button>`;
+
+  const respHtml = S.responsables.length > 1
+    ? '<div class="chips-row resp-chips">' +
+        S.responsables.map(r =>
+          `<button class="chip resp${S.filtroResp===r.id?' active':''}" onclick="setFiltroResp(${r.id})">${r.nombre}</button>`
+        ).join('') +
+      '</div>'
+    : '';
+
+  document.getElementById('tabs').innerHTML =
+    `<div class="chips-row">${qHtml}<span class="chips-sep"></span>${histHtml}</div>${respHtml}`;
 }
 
-function setTab(t){ S.tabActivo=t; renderTabs(); renderContenido(); }
+function setTab(t){ S.tabActivo=t; S.filtroQuincena='todos'; S.filtroResp=null; renderTabs(); renderContenido(); }
+function setFiltroQuincena(q){ S.filtroQuincena=q; S.tabActivo='lista'; renderTabs(); renderContenido(); }
+function setFiltroResp(id){ S.filtroResp = S.filtroResp===id ? null : id; renderTabs(); renderContenido(); }
 
 function renderContenido(){
   if(S.tabActivo === 'historial'){ renderHistorial(); return; }
+  S.tabActivo = 'lista';
   const prests = prestsFiltrados();
   const grupos = {};
   prests.forEach(p => { if(!grupos[p.responsableId]) grupos[p.responsableId]=[]; grupos[p.responsableId].push(p); });

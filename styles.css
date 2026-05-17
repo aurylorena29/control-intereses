@@ -161,31 +161,30 @@ body {
 .btn-asignar { margin-top: 5px; font-size: 11px; font-weight: 600; background: var(--green-mid); color: white; border: none; border-radius: 5px; padding: 3px 9px; cursor: pointer; font-family: inherit; }
 .btn-asignar:hover { background: var(--green); }
 
-/* ─── TABS ───────────────────────────────────────────────────── */
-.tabs-wrap { margin-bottom: 18px; border-bottom: 1px solid var(--border); }
-.tabs-scroll { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
-.tabs-scroll::-webkit-scrollbar { display: none; }
-.tab-btn {
+/* ─── FILTROS / CHIPS ────────────────────────────────────────── */
+.tabs-wrap { margin-bottom: 16px; }
+.tabs-scroll { display: block; }
+.chips-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.chips-row.resp-chips { margin-bottom: 0; }
+.chips-sep { flex: 1; }
+.chip {
   flex-shrink: 0;
-  padding: 8px 16px 9px;
-  border: none;
-  border-bottom: 2px solid transparent;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
   background: transparent;
   font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
   cursor: pointer;
   transition: all .15s;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: -1px;
+  white-space: nowrap;
 }
-.tab-btn:hover .tab-day { color: var(--text); }
-.tab-btn.active { border-bottom-color: var(--text); }
-.tab-day { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; color: var(--text2); transition: color .15s; }
-.tab-btn.active .tab-day { color: var(--text); }
-.tab-sub { display: none; }
-.tab-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; background: var(--red-bg); color: var(--red-mid); }
-.tab-btn.active .tab-badge { background: var(--red-bg); color: var(--red-mid); }
+.chip:hover { background: var(--surface2); color: var(--text); }
+.chip.active { background: var(--text); border-color: var(--text); color: #fff; }
+.chip.resp { border-style: dashed; }
+.chip.resp.active { border-style: solid; }
 
 /* ─── RESPONSABLES ───────────────────────────────────────────── */
 .responsable-block { margin-bottom: 28px; }
