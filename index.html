@@ -101,45 +101,40 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 
 /* PRESTAMO CARD */
 .pcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-.pcard-head { padding: 13px 15px 11px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.pcard-title { font-size: 13px; font-weight: 600; }
-.pcard-fecha { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.pcard-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.dia-chip { background: #1A1814; color: white; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
-.badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
-.badge-int { background: var(--blue-bg); color: var(--blue); }
-.badge-cap { background: var(--green-bg); color: var(--green); }
+.pcard-head { padding: 14px 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 13px; }
+.dia-grande { width: 58px; height: 58px; border-radius: 12px; background: #1A1814; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+.dia-g-num { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 700; line-height: 1; }
+.dia-g-label { font-size: 8px; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,.5); margin-top: 3px; }
+.pcard-info { flex: 1; min-width: 0; }
+.pcard-capital { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; }
+.pcard-cuota { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.pcard-desde { font-size: 11px; color: var(--text3); margin-top: 1px; }
 
-.pcard-body { padding: 12px 15px; }
-.cap-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface2); border-radius: 7px; padding: 8px 11px; margin-bottom: 11px; }
-.cap-label { font-size: 12px; color: var(--text2); }
-.cap-val { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 14px; }
-.cobros-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text2); font-weight: 600; margin-bottom: 7px; }
+.pcard-body { padding: 10px 13px; }
 
 /* COBROS */
-.mes-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 7px; margin-bottom: 4px; border: 1px solid transparent; }
-.mes-row.pagado   { background: var(--green-bg);  border-color: var(--green-border); }
-.mes-row.pendiente{ background: var(--amber-bg); border-color: var(--amber-border); }
-.mes-row.vencido  { background: var(--red-bg);   border-color: var(--red-border); }
-.mes-left { display: flex; align-items: center; gap: 7px; }
-.mes-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.dot-pagado { background: var(--green-mid); }
-.dot-pendiente { background: var(--amber-mid); }
-.dot-vencido { background: var(--red-mid); }
+.mes-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 9px; border-radius: 7px; margin-bottom: 4px; border: 1px solid transparent; }
+.mes-row.pagado    { background: var(--green-bg);  border-color: var(--green-border); }
+.mes-row.pendiente { background: var(--amber-bg);  border-color: var(--amber-border); }
+.mes-row.vencido   { background: var(--red-bg);    border-color: var(--red-border); }
+.mes-row.sin-cobro { background: var(--surface2);  border-color: var(--border); }
+.mes-left { display: flex; align-items: center; gap: 8px; }
 .mes-name { font-size: 13px; font-weight: 500; }
-.mes-row.pagado .mes-name { color: var(--green); }
+.mes-row.pagado .mes-name    { color: var(--green); }
 .mes-row.pendiente .mes-name { color: var(--amber); }
-.mes-row.vencido .mes-name { color: var(--red); }
-.dias-chip { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; color: white; }
-.mes-row.vencido .dias-chip { background: var(--red-mid); }
-.mes-row.pendiente .dias-chip { background: var(--amber-mid); }
-.mes-right { display: flex; align-items: center; gap: 6px; }
+.mes-row.vencido .mes-name   { color: var(--red); }
+.mes-row.sin-cobro .mes-name { color: var(--text2); }
+.mes-right { display: flex; align-items: center; gap: 5px; }
 .mes-monto { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; }
-.mes-row.pagado .mes-monto { color: var(--green); }
+.mes-row.pagado .mes-monto    { color: var(--green); }
 .mes-row.pendiente .mes-monto { color: var(--amber); }
-.mes-row.vencido .mes-monto { color: var(--red); }
-.icon-btn { width: 23px; height: 23px; border-radius: 5px; border: none; background: rgba(255,255,255,.8); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: inherit; padding: 0; }
-.icon-btn:hover { background: white; }
+.mes-row.vencido .mes-monto   { color: var(--red); }
+.mes-row.sin-cobro .mes-monto { color: var(--text3); }
+.chk-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border2); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; transition: all .15s; padding: 0; color: transparent; }
+.chk-btn:hover { border-color: var(--green-mid); }
+.chk-btn.pagado { background: var(--green-mid); border-color: var(--green-mid); color: white; }
+.icon-btn { width: 22px; height: 22px; border-radius: 5px; border: none; background: rgba(0,0,0,.06); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text3); padding: 0; transition: all .12s; }
+.icon-btn:hover { background: var(--red-bg); color: var(--red-mid); }
 
 .pcard-footer { border-top: 1px solid var(--border); display: flex; }
 .foot-btn { flex: 1; padding: 9px; font-size: 12px; font-family: inherit; border: none; background: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500; transition: background .12s; }
@@ -471,50 +466,43 @@ function renderContenido(){
 
     const cards=ps.map(p=>{
       const dia=diaCobro(p);
-      const cobros=ordenarCobros(p.cobros);
-      const cobrosHtml=cobros.length?cobros.map(c=>{
-        const dias=diasHoy(c.fecha_cobro);
-        let dchip='';
-        if(c.estado!=='pagado'){
-          if(dias<0) dchip=`<span class="dias-chip">${Math.abs(dias)}d venc.</span>`;
-          else if(dias<=10) dchip=`<span class="dias-chip">${dias}d</span>`;
-        }
-        return`<div class="mes-row ${c.estado}">
+      const meses=getMesesPrestamo(p);
+      const mesesHtml=meses.map(({mes,anio,cobro})=>{
+        const pagado=cobro&&cobro.estado==='pagado';
+        const clase=cobro?cobro.estado:'sin-cobro';
+        const monto=cobro?cobro.monto:p.tasa_mensual;
+        const delBtn=cobro
+          ?`<button class="icon-btn" onclick="eliminarCobro(${p.id},'${cobro.id}')" title="Eliminar mes"><i class="ti ti-x"></i></button>`
+          :'';
+        return`<div class="mes-row ${clase}">
           <div class="mes-left">
-            <div class="mes-dot dot-${c.estado}"></div>
-            <span class="mes-name">${MESES_C[c.mes-1]} ${c.anio}</span>${dchip}
+            <button class="chk-btn${pagado?' pagado':''}" onclick="toggleCobro(${p.id},${mes},${anio})" title="${pagado?'Marcar pendiente':'Marcar pagado'}">
+              ${pagado?'<i class="ti ti-check"></i>':''}
+            </button>
+            <span class="mes-name">${MESES_C[mes-1]} ${anio}</span>
           </div>
           <div class="mes-right">
-            <span class="mes-monto">${fmt(c.monto)}</span>
-            ${c.estado!=='pagado'
-              ?`<button class="icon-btn" onclick="marcarPagado(${p.id},'${c.id}')" title="Marcar pagado"><i class="ti ti-check"></i></button>`
-              :'<i class="ti ti-check" style="font-size:13px;color:var(--green-mid)"></i>'}
+            <span class="mes-monto">${fmt(monto)}</span>
+            ${delBtn}
           </div>
         </div>`;
-      }).join('')
-      :'<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin cobros registrados</div>';
+      }).join('') || '<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin meses registrados</div>';
 
       return`<div class="pcard">
         <div class="pcard-head">
-          <div>
-            <div class="pcard-title">${p.desc}</div>
-            <div class="pcard-fecha"><i class="ti ti-calendar-event" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>Inicio: ${fechaDisp(p.fecha_inicio)}</div>
+          <div class="dia-grande">
+            <span class="dia-g-num">${dia}</span>
+            <span class="dia-g-label">c/mes</span>
           </div>
-          <div class="pcard-meta">
-            <span class="dia-chip">Día ${dia} c/mes</span>
-            <span class="badge ${p.tipo==='Intereses'?'badge-int':'badge-cap'}">${p.tipo}</span>
+          <div class="pcard-info">
+            <div class="pcard-capital">${fmt(p.capital)}</div>
+            <div class="pcard-cuota">Cuota: ${fmt(p.tasa_mensual)} / mes</div>
+            <div class="pcard-desde"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
           </div>
         </div>
-        <div class="pcard-body">
-          <div class="cap-row"><span class="cap-label">Capital prestado</span><span class="cap-val">${fmt(p.capital)}</span></div>
-          <div class="cobros-label">Historial de cobros</div>
-          ${cobrosHtml}
-        </div>
+        <div class="pcard-body">${mesesHtml}</div>
         <div class="pcard-footer">
-          <button class="foot-btn" onclick="abrirAgregarCobro(${p.id})"><i class="ti ti-plus" style="font-size:13px"></i> Cobro</button>
-          <button class="foot-btn" onclick="abrirModalDinero()"><i class="ti ti-cash" style="font-size:13px"></i> Ingreso</button>
-          <button class="foot-btn" onclick="abrirConsignaciones(${p.id})"><i class="ti ti-list-details" style="font-size:13px"></i></button>
-          <button class="foot-btn danger" onclick="eliminarPrestamo(${p.id})"><i class="ti ti-trash" style="font-size:13px"></i></button>
+          <button class="foot-btn danger" onclick="eliminarPrestamo(${p.id})"><i class="ti ti-trash" style="font-size:13px"></i> Eliminar</button>
         </div>
       </div>`;
     }).join('');
@@ -530,7 +518,43 @@ function renderContenido(){
   }).join('');
 }
 
+// ── Helpers de meses ────────────────────────────────────────────
+function getMesesPrestamo(p){
+  const inicio=new Date(p.fecha_inicio+'T00:00:00');
+  const hoyDate=new Date();
+  let y=inicio.getFullYear(), m=inicio.getMonth()+1;
+  const hy=hoyDate.getFullYear(), hm=hoyDate.getMonth()+1;
+  const result=[];
+  while(y<hy||(y===hy&&m<=hm)){
+    const cobro=(p.cobros||[]).find(c=>c.mes===m&&c.anio===y)||null;
+    result.push({mes:m,anio:y,cobro});
+    m++; if(m>12){m=1;y++;}
+  }
+  return result;
+}
+
 // ── Acciones con sync ────────────────────────────────────────────
+async function toggleCobro(pid,mes,anio){
+  const p=S.prestamos.find(x=>x.id===pid);
+  const cobro=(p.cobros||[]).find(c=>c.mes===mes&&c.anio===anio);
+  if(cobro){
+    cobro.estado=cobro.estado==='pagado'?'pendiente':'pagado';
+  } else {
+    const dia=diaCobro(p);
+    const fc=anio+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+    p.cobros.push({id:'c'+S.nextId++,mes,anio,monto:p.tasa_mensual,estado:'pagado',fecha_cobro:fc});
+  }
+  render();
+  await guardarTodo();
+}
+
+async function eliminarCobro(pid,cid){
+  const p=S.prestamos.find(x=>x.id===pid);
+  p.cobros=p.cobros.filter(c=>c.id!==cid);
+  render();
+  await guardarTodo();
+}
+
 async function marcarPagado(pid,cid){
   const p=S.prestamos.find(x=>x.id===pid);
   const c=p.cobros.find(x=>x.id===cid);
@@ -693,31 +717,53 @@ async function guardarSetup(){
 
 // ── Modal: Nuevo préstamo ─────────────────────────────────────────
 function abrirModalPrestamo(){
-  const opts=S.responsables.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('');
-  modal('Nuevo préstamo',`
-    <div class="form-group"><label>Responsable</label>
-      <select id="p-resp" onchange="toggleNuevoResp(this.value)">
-        ${opts}<option value="nuevo">+ Nuevo responsable...</option>
-      </select>
-    </div>
-    <div id="p-nuevo-wrap" style="display:none">
-      <div class="form-group"><label>Nombre del responsable</label><input id="p-nuevo-nombre" type="text" placeholder="Ej: CARLOS"></div>
-    </div>
-    <div class="form-group"><label>Descripción</label><input id="p-desc" type="text" placeholder="Ej: Préstamo intereses"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Tipo</label><select id="p-tipo"><option>Intereses</option><option>Capital</option></select></div>
-      <div class="form-group"><label>Capital ($)</label><input id="p-capital" type="number" placeholder="18000000"></div>
-    </div>
-    <div class="form-group"><label>Fecha del préstamo</label>
-      <input id="p-fecha" type="date" value="${new Date().toISOString().split('T')[0]}" oninput="actualizarHint()">
-      <div class="form-hint">El día de esta fecha define el día de cobro de cada mes</div>
-    </div>
-    <div class="dia-hint-box" id="p-hint"></div>
-    <div class="form-group"><label>Cuota mensual de intereses ($)</label><input id="p-cuota" type="number" placeholder="360000"></div>`,
-    `<button class="btn-cancel" onclick="cerrar()">Cancelar</button>
-     <button class="btn-save" onclick="guardarPrestamo()">Guardar</button>`
+  const hoy=new Date().toISOString().split('T')[0];
+  const tieneResp=S.responsables.length>0;
+
+  let selectHtml='';
+  if(tieneResp){
+    const opts=S.responsables.map(r=>'<option value="'+r.id+'">'+r.nombre+'</option>').join('');
+    selectHtml='<div class="form-group"><label>Responsable</label>'
+      +'<select id="p-resp" onchange="toggleNuevoResp(this.value)">'
+      +opts+'<option value="nuevo">+ Nuevo responsable...</option>'
+      +'</select></div>';
+  }
+
+  modal('Nuevo préstamo',
+    selectHtml+
+    '<div id="p-nuevo-wrap"'+(tieneResp?' style="display:none"':'')+'>'+
+      '<div class="form-group"><label>Nombre del responsable</label>'+
+      '<input id="p-nuevo-nombre" type="text" placeholder="Ej: CARLOS" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">'+
+      '</div></div>'+
+    '<div class="form-group"><label>Capital prestado ($)</label>'+
+      '<input id="p-capital" type="number" placeholder="18000000" oninput="actualizarCuota()">'+
+    '</div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>Tasa de interés mensual (%)</label>'+
+        '<input id="p-tasa" type="number" value="2" step="0.1" min="0" oninput="actualizarCuota()">'+
+      '</div>'+
+      '<div class="form-group"><label>Cuota mensual</label>'+
+        '<input id="p-cuota-display" type="text" readonly placeholder="—" style="background:var(--surface2);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-weight:700;cursor:default">'+
+      '</div>'+
+    '</div>'+
+    '<div class="form-group"><label>Fecha del préstamo</label>'+
+      '<input id="p-fecha" type="date" value="'+hoy+'" oninput="actualizarHint()">'+
+      '<div class="form-hint">El día de esta fecha define el día de cobro de cada mes</div>'+
+    '</div>'+
+    '<div class="dia-hint-box" id="p-hint" style="display:none"></div>',
+    '<button class="btn-cancel" onclick="cerrar()">Cancelar</button>'+
+    '<button class="btn-save" onclick="guardarPrestamo()">Guardar</button>'
   );
   actualizarHint();
+  actualizarCuota();
+}
+
+function actualizarCuota(){
+  const capital=parseFloat(document.getElementById('p-capital')?.value)||0;
+  const tasa=parseFloat(document.getElementById('p-tasa')?.value)||0;
+  const cuota=Math.round(capital*tasa/100);
+  const el=document.getElementById('p-cuota-display');
+  if(el) el.value=cuota>0?fmt(cuota):'';
 }
 
 function toggleNuevoResp(v){ document.getElementById('p-nuevo-wrap').style.display=v==='nuevo'?'block':'none'; }
@@ -732,24 +778,24 @@ function actualizarHint(){
 }
 
 async function guardarPrestamo(){
-  const rv=document.getElementById('p-resp').value;
-  const desc=document.getElementById('p-desc').value.trim();
-  const tipo=document.getElementById('p-tipo').value;
+  const respEl=document.getElementById('p-resp');
+  const rv=respEl?respEl.value:'nuevo';
   const capital=parseFloat(document.getElementById('p-capital').value)||0;
+  const tasa=parseFloat(document.getElementById('p-tasa').value)||2;
   const fecha=document.getElementById('p-fecha').value;
-  const cuota=parseFloat(document.getElementById('p-cuota').value)||0;
   if(!capital||!fecha){alert('Completa capital y fecha');return;}
+  const cuota=Math.round(capital*tasa/100);
   let rid;
   if(rv==='nuevo'){
     const nn=document.getElementById('p-nuevo-nombre').value.trim();
-    if(!nn){alert('Ingresa el nombre');return;}
+    if(!nn){alert('Ingresa el nombre del responsable');return;}
     rid=S.nextId++;
     S.responsables.push({id:rid,nombre:nn,color:COLORES_RESP[S.responsables.length%COLORES_RESP.length]});
   } else { rid=parseInt(rv); }
   const id=S.nextId++;
   S.prestamos.push({
-    id,responsableId:rid,desc:desc||'Préstamo',tipo,capital,
-    fecha_inicio:fecha,tasa_mensual:cuota,
+    id,responsableId:rid,desc:'Préstamo',tipo:'Intereses',capital,
+    fecha_inicio:fecha,tasa_mensual:cuota,tasa_pct:tasa,
     consignaciones:[{id:S.nextId++,desc:'Ingreso inicial',monto:capital,fecha}],
     cobros:[]
   });
