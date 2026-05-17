@@ -441,6 +441,8 @@ async function ocultarMes(pid, mes, anio){
 
 async function agregarMesSiguiente(pid){
   const p     = S.prestamos.find(x => x.id===pid);
+  if(!p) return;
+  if(!p.cobros) p.cobros = [];
   const meses = getMesesPrestamo(p);
   let nm, ny;
   if(meses.length){
@@ -453,7 +455,7 @@ async function agregarMesSiguiente(pid){
     if(nm>12){ nm=1; ny++; }
   }
   const dia = diaCobro(p);
-  const fc  = ny+'-'+String(nm).padStart(2,'0')+'-'+String(dia).padStart(2,'00');
+  const fc  = ny+'-'+String(nm).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
   p.cobros.push({id:'c'+S.nextId++, mes:nm, anio:ny, monto:getCuotaParaMes(p,nm,ny), estado:'pendiente', fecha_cobro:fc});
   render();
   await guardarTodo();
