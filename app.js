@@ -153,15 +153,7 @@ function renderSummary(){
 }
 
 function renderBanner(){
-  const s = calcStats();
-  document.getElementById('libre-banner').innerHTML = s.libre > 0 ? `
-    <div class="banner amber">
-      <div>
-        <div class="banner-text"><i class="ti ti-alert-circle" style="vertical-align:-2px;margin-right:5px"></i>Dinero recibido sin asignar</div>
-        <div class="banner-sub">Asígnalo cuando sepas a qué cobro corresponde</div>
-      </div>
-      <div class="banner-val">${fmt(s.libre)}</div>
-    </div>` : '';
+  document.getElementById('libre-banner').innerHTML = '';
 }
 
 function renderDinero(){

@@ -162,31 +162,30 @@ body {
 .btn-asignar:hover { background: var(--green); }
 
 /* ─── TABS ───────────────────────────────────────────────────── */
-.tabs-wrap { margin-bottom: 18px; }
-.tabs-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: none; }
+.tabs-wrap { margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.tabs-scroll { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
 .tabs-scroll::-webkit-scrollbar { display: none; }
 .tab-btn {
   flex-shrink: 0;
-  padding: 9px 18px;
-  border-radius: 9px;
-  border: 1px solid var(--border2);
-  background: var(--surface);
+  padding: 8px 16px 9px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   font-family: inherit;
   cursor: pointer;
   transition: all .15s;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 7px;
+  margin-bottom: -1px;
 }
-.tab-btn:hover { background: var(--surface2); }
-.tab-btn.active { background: #1A1814; border-color: #1A1814; }
-.tab-day { font-size: 16px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: var(--text); }
-.tab-btn.active .tab-day { color: white; }
-.tab-sub { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--text3); }
-.tab-btn.active .tab-sub { color: rgba(255,255,255,.6); }
-.tab-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-top: 2px; background: var(--red-bg); color: var(--red-mid); }
-.tab-btn.active .tab-badge { background: rgba(255,255,255,.2); color: white; }
+.tab-btn:hover .tab-day { color: var(--text); }
+.tab-btn.active { border-bottom-color: var(--text); }
+.tab-day { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; color: var(--text2); transition: color .15s; }
+.tab-btn.active .tab-day { color: var(--text); }
+.tab-sub { display: none; }
+.tab-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; background: var(--red-bg); color: var(--red-mid); }
+.tab-btn.active .tab-badge { background: var(--red-bg); color: var(--red-mid); }
 
 /* ─── RESPONSABLES ───────────────────────────────────────────── */
 .responsable-block { margin-bottom: 28px; }
