@@ -218,7 +218,7 @@ body {
   width: 58px;
   height: 58px;
   border-radius: 12px;
-  background: var(--surface2);
+  background: transparent;
   border: 1px solid var(--border2);
   color: var(--text);
   display: flex;
