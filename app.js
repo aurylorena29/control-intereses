@@ -188,14 +188,11 @@ function renderTabs(){
   const dias = getDias();
   const totalPend = S.prestamos.reduce((s,p) => s+p.cobros.filter(c=>c.estado!=='pagado').length, 0);
   let html=`<button class="tab-btn${S.tabActivo==='todos'?' active':''}" onclick="setTab('todos')">
-    <span class="tab-day">Todos</span><span class="tab-sub">los préstamos</span>
-    ${totalPend?`<span class="tab-badge">${totalPend} pendiente${totalPend>1?'s':''}</span>`:''}
+    <span class="tab-day">Todos</span>
   </button>`;
   dias.forEach(dia => {
-    const pend = pendientesDia(dia);
     html+=`<button class="tab-btn${S.tabActivo===dia?' active':''}" onclick="setTab(${dia})">
-      <span class="tab-day">Día ${dia}</span><span class="tab-sub">de cada mes</span>
-      ${pend?`<span class="tab-badge">${pend} pendiente${pend>1?'s':''}</span>`:''}
+      <span class="tab-day">Día ${dia}</span>
     </button>`;
   });
   html+=`<button class="tab-btn${S.tabActivo==='historial'?' active':''}" onclick="setTab('historial')">
