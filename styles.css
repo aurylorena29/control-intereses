@@ -272,7 +272,7 @@ body {
   margin-bottom: 4px;
   border: 1px solid var(--border);
 }
-.mes-row.pagado    { background: transparent; border-color: var(--border); }
+.mes-row.pagado    { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
 .mes-row.pendiente { background: rgba(201,125,10,.04); border-color: rgba(201,125,10,.22); }
 .mes-row.vencido   { background: rgba(192,48,48,.04);  border-color: rgba(192,48,48,.2); }
 .mes-row.parcial   { background: rgba(24,62,122,.04);  border-color: rgba(24,62,122,.2); }
