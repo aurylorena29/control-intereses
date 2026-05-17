@@ -218,8 +218,9 @@ body {
   width: 58px;
   height: 58px;
   border-radius: 12px;
-  background: #1A1814;
-  color: white;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -227,7 +228,7 @@ body {
   flex-shrink: 0;
 }
 .dia-g-num   { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 700; line-height: 1; }
-.dia-g-label { font-size: 8px; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,.5); margin-top: 3px; }
+.dia-g-label { font-size: 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--text3); margin-top: 3px; }
 .pcard-info    { flex: 1; min-width: 0; }
 .pcard-capital { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; }
 .pcard-cuota   { font-size: 11px; color: var(--text2); margin-top: 2px; }
