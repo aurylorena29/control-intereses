@@ -688,6 +688,7 @@ function getMesesPrestamo(p){
       result.push({mes:c.mes,anio:c.anio,cobro:c});
     }
   });
+  result.sort((a,b)=>a.anio!==b.anio?a.anio-b.anio:a.mes-b.mes);
   return result;
 }
 
