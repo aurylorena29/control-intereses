@@ -133,6 +133,37 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .chk-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border2); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; transition: all .15s; padding: 0; color: transparent; }
 .chk-btn:hover { border-color: var(--green-mid); }
 .chk-btn.pagado { background: var(--green-mid); border-color: var(--green-mid); color: white; }
+.chk-btn.parcial { background: var(--blue-bg); border-color: #8FBCE8; color: var(--blue); }
+.mes-row.parcial { background: var(--blue-bg); border-color: #8FBCE8; }
+.mes-row.parcial .mes-name { color: var(--blue); }
+.mes-row.parcial .mes-monto { color: var(--blue); }
+.mes-parcial-sub { font-size: 10px; color: var(--text2); margin-top: 1px; }
+/* HISTORIAL */
+.hist-grupo { margin-bottom: 22px; }
+.hist-mes-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--text2); font-weight: 600; margin-bottom: 8px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+.hist-row { display: flex; align-items: center; gap: 11px; padding: 9px 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 5px; box-shadow: var(--shadow); }
+.hist-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.hist-icon.pagado   { background: var(--green-bg); color: var(--green-mid); }
+.hist-icon.parcial  { background: var(--blue-bg);  color: var(--blue); }
+.hist-icon.pendiente{ background: var(--amber-bg); color: var(--amber-mid); }
+.hist-icon.vencido  { background: var(--red-bg);   color: var(--red-mid); }
+.hist-icon.ingreso  { background: #E0F0FB; color: #1A7AAF; }
+.hist-info { flex: 1; min-width: 0; }
+.hist-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.hist-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+.hist-monto { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; }
+.hist-monto.pagado  { color: var(--green); }
+.hist-monto.parcial { color: var(--blue); }
+.hist-monto.pendiente { color: var(--amber-mid); }
+.hist-monto.vencido { color: var(--red-mid); }
+.hist-monto.ingreso { color: #1A7AAF; }
+.hist-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+.hist-badge.pagado  { background: var(--green-bg);  color: var(--green); }
+.hist-badge.parcial { background: var(--blue-bg);   color: var(--blue); }
+.hist-badge.pendiente { background: var(--amber-bg); color: var(--amber); }
+.hist-badge.vencido { background: var(--red-bg);    color: var(--red); }
+.hist-badge.ingreso { background: #E0F0FB; color: #1A7AAF; }
 .icon-btn { width: 22px; height: 22px; border-radius: 5px; border: none; background: rgba(0,0,0,.06); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text3); padding: 0; transition: all .12s; }
 .icon-btn:hover { background: var(--red-bg); color: var(--red-mid); }
 .btn-add-mes { width: 100%; margin-top: 7px; padding: 7px; border: 1px dashed var(--border2); border-radius: 7px; background: none; font-family: inherit; font-size: 12px; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s; }
@@ -448,12 +479,17 @@ function renderTabs(){
       ${pend?`<span class="tab-badge">${pend} pendiente${pend>1?'s':''}</span>`:''}
     </button>`;
   });
+  html+=`<button class="tab-btn${S.tabActivo==='historial'?' active':''}" onclick="setTab('historial')">
+    <span class="tab-day" style="font-size:20px"><i class="ti ti-history" style="font-size:18px;vertical-align:-2px"></i></span>
+    <span class="tab-sub">Historial</span>
+  </button>`;
   document.getElementById('tabs').innerHTML=html;
 }
 
 function setTab(t){ S.tabActivo=t; renderTabs(); renderContenido(); }
 
 function renderContenido(){
+  if(S.tabActivo==='historial'){ renderHistorial(); return; }
   const prests=prestsFiltrados();
   const grupos={};
   prests.forEach(p=>{ if(!grupos[p.responsableId]) grupos[p.responsableId]=[]; grupos[p.responsableId].push(p); });
@@ -475,20 +511,30 @@ function renderContenido(){
       const meses=getMesesPrestamo(p);
       const mesesHtml=meses.map(({mes,anio,cobro})=>{
         const pagado=cobro&&cobro.estado==='pagado';
-        const clase=cobro?cobro.estado:'sin-cobro';
+        const asignado=cobro?getAsignadoACobro(cobro.id):0;
+        const parcial=cobro&&!pagado&&asignado>0;
+        const clase=pagado?'pagado':parcial?'parcial':cobro?cobro.estado:'sin-cobro';
         const monto=cobro?cobro.monto:getCuotaParaMes(p,mes,anio);
         const delBtn=cobro
           ?`<button class="icon-btn" onclick="eliminarCobro(${p.id},'${cobro.id}')" title="Eliminar mes"><i class="ti ti-x"></i></button>`
           :`<button class="icon-btn" onclick="ocultarMes(${p.id},${mes},${anio})" title="Ocultar mes"><i class="ti ti-x"></i></button>`;
+        const chkClass=pagado?' pagado':parcial?' parcial':'';
+        const chkIcon=pagado?'<i class="ti ti-check"></i>':parcial?'<i class="ti ti-minus"></i>':'';
+        const montoHtml=parcial
+          ?`<div style="text-align:right">
+              <span class="mes-monto">${fmt(monto)}</span>
+              <div class="mes-parcial-sub"><span style="color:var(--green-mid)">Pagado ${fmt(asignado)}</span> · <span style="color:var(--amber-mid)">Debe ${fmt(monto-asignado)}</span></div>
+            </div>`
+          :`<span class="mes-monto">${fmt(monto)}</span>`;
         return`<div class="mes-row ${clase}">
           <div class="mes-left">
-            <button class="chk-btn${pagado?' pagado':''}" onclick="toggleCobro(${p.id},${mes},${anio})" title="${pagado?'Marcar pendiente':'Marcar pagado'}">
-              ${pagado?'<i class="ti ti-check"></i>':''}
+            <button class="chk-btn${chkClass}" onclick="toggleCobro(${p.id},${mes},${anio})" title="${pagado?'Marcar pendiente':'Marcar pagado'}">
+              ${chkIcon}
             </button>
             <span class="mes-name">${MESES_C[mes-1]} ${anio}</span>
           </div>
           <div class="mes-right">
-            <span class="mes-monto">${fmt(monto)}</span>
+            ${montoHtml}
             ${delBtn}
           </div>
         </div>`;
@@ -534,6 +580,75 @@ function renderContenido(){
       </div>
       <div class="prestamos-grid">${cards}</div>
     </div>`;
+  }).join('');
+}
+
+// ── Helpers de asignaciones ──────────────────────────────────────
+function getAsignadoACobro(cobroId){
+  let total=0;
+  S.dineroLibre.forEach(d=>(d.asignaciones||[]).forEach(a=>{ if(a.cobroId===cobroId) total+=a.monto; }));
+  return total;
+}
+
+// ── Historial ────────────────────────────────────────────────────
+function renderHistorial(){
+  const el=document.getElementById('contenido');
+  const eventos=[];
+  S.prestamos.forEach(p=>{
+    const resp=S.responsables.find(r=>r.id===p.responsableId);
+    const nombre=resp?resp.nombre:'Sin responsable';
+    p.cobros.forEach(c=>{
+      const asignado=getAsignadoACobro(c.id);
+      const parcial=c.estado!=='pagado'&&asignado>0;
+      eventos.push({tipo:'cobro',fecha:c.fecha_cobro,mes:c.mes,anio:c.anio,
+        monto:c.monto,estado:parcial?'parcial':c.estado,asignado,responsable:nombre});
+    });
+  });
+  S.dineroLibre.forEach(d=>{
+    const partes=d.fecha.split('-');
+    eventos.push({tipo:'ingreso',fecha:d.fecha,mes:parseInt(partes[1]),anio:parseInt(partes[0]),
+      monto:d.monto,desc:d.desc,asignaciones:d.asignaciones||[]});
+  });
+  if(!eventos.length){
+    el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Sin historial registrado</div>';
+    return;
+  }
+  eventos.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  const grupos={};
+  eventos.forEach(e=>{
+    const k=e.anio+'-'+String(e.mes).padStart(2,'0');
+    if(!grupos[k]) grupos[k]=[];
+    grupos[k].push(e);
+  });
+  el.innerHTML=Object.entries(grupos).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,evs])=>{
+    const [y,m]=k.split('-').map(Number);
+    const rows=evs.map(e=>{
+      if(e.tipo==='cobro'){
+        const icon=e.estado==='pagado'?'ti-check':e.estado==='parcial'?'ti-minus':'ti-clock';
+        const subParcial=e.estado==='parcial'
+          ?`<div class="hist-sub"><span style="color:var(--green-mid)">Pagado ${fmt(e.asignado)}</span> · <span style="color:var(--amber-mid)">Debe ${fmt(e.monto-e.asignado)}</span></div>`:'';
+        return`<div class="hist-row">
+          <div class="hist-icon ${e.estado}"><i class="ti ${icon}"></i></div>
+          <div class="hist-info"><div class="hist-title">${e.responsable}</div>${subParcial}</div>
+          <div class="hist-right">
+            <span class="hist-monto ${e.estado}">${fmt(e.monto)}</span>
+            <span class="hist-badge ${e.estado}">${e.estado.charAt(0).toUpperCase()+e.estado.slice(1)}</span>
+          </div>
+        </div>`;
+      } else {
+        const asigT=(e.asignaciones||[]).reduce((s,a)=>s+a.monto,0);
+        const sub=asigT>0?`<div class="hist-sub">Asignado: ${fmt(asigT)}${asigT<e.monto?' · Sin asignar: '+fmt(e.monto-asigT):''}</div>`:'';
+        return`<div class="hist-row">
+          <div class="hist-icon ingreso"><i class="ti ti-arrow-down-circle"></i></div>
+          <div class="hist-info"><div class="hist-title">${e.desc}</div>${sub}</div>
+          <div class="hist-right">
+            <span class="hist-monto ingreso">${fmt(e.monto)}</span>
+            <span class="hist-badge ingreso">Ingreso</span>
+          </div>
+        </div>`;
+      }
+    }).join('');
+    return`<div class="hist-grupo"><div class="hist-mes-label">${MESES_N[m-1]} ${y}</div>${rows}</div>`;
   }).join('');
 }
 
