@@ -272,7 +272,7 @@ body {
   margin-bottom: 4px;
   border: 1px solid var(--border);
 }
-.mes-row.pagado    { background: rgba(10,94,72,.04);   border-color: rgba(24,145,106,.2); }
+.mes-row.pagado    { background: transparent; border-color: var(--border); }
 .mes-row.pendiente { background: rgba(201,125,10,.04); border-color: rgba(201,125,10,.22); }
 .mes-row.vencido   { background: rgba(192,48,48,.04);  border-color: rgba(192,48,48,.2); }
 .mes-row.parcial   { background: rgba(24,62,122,.04);  border-color: rgba(24,62,122,.2); }
@@ -282,14 +282,14 @@ body {
 .mes-right { display: flex; align-items: center; gap: 5px; }
 
 .mes-name { font-size: 13px; font-weight: 500; }
-.mes-row.pagado    .mes-name { color: var(--green-mid); }
+.mes-row.pagado    .mes-name { color: var(--text3); text-decoration: line-through; }
 .mes-row.pendiente .mes-name { color: var(--amber-mid); }
 .mes-row.vencido   .mes-name { color: var(--red-mid); }
 .mes-row.parcial   .mes-name { color: var(--blue); }
 .mes-row.sin-cobro .mes-name { color: var(--text2); }
 
 .mes-monto { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; }
-.mes-row.pagado    .mes-monto { color: var(--green-mid); }
+.mes-row.pagado    .mes-monto { color: var(--text3); }
 .mes-row.pendiente .mes-monto { color: var(--amber-mid); }
 .mes-row.vencido   .mes-monto { color: var(--red-mid); }
 .mes-row.parcial   .mes-monto { color: var(--blue); }
@@ -314,7 +314,7 @@ body {
   color: transparent;
 }
 .chk-btn:hover          { border-color: var(--green-mid); }
-.chk-btn.pagado         { background: var(--green-mid); border-color: var(--green-mid); color: white; }
+.chk-btn.pagado         { background: transparent; border-color: var(--border2); color: var(--text3); }
 .chk-btn.parcial        { background: rgba(24,62,122,.1); border-color: var(--blue); color: var(--blue); }
 
 .icon-btn {
