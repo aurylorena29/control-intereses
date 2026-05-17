@@ -135,6 +135,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .chk-btn.pagado { background: var(--green-mid); border-color: var(--green-mid); color: white; }
 .icon-btn { width: 22px; height: 22px; border-radius: 5px; border: none; background: rgba(0,0,0,.06); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text3); padding: 0; transition: all .12s; }
 .icon-btn:hover { background: var(--red-bg); color: var(--red-mid); }
+.btn-add-mes { width: 100%; margin-top: 7px; padding: 7px; border: 1px dashed var(--border2); border-radius: 7px; background: none; font-family: inherit; font-size: 12px; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s; }
+.btn-add-mes:hover { border-color: var(--green-mid); color: var(--green-mid); background: var(--green-bg); }
 
 .pcard-footer { border-top: 1px solid var(--border); display: flex; }
 .foot-btn { flex: 1; padding: 9px; font-size: 12px; font-family: inherit; border: none; background: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500; transition: background .12s; }
@@ -473,7 +475,7 @@ function renderContenido(){
         const monto=cobro?cobro.monto:p.tasa_mensual;
         const delBtn=cobro
           ?`<button class="icon-btn" onclick="eliminarCobro(${p.id},'${cobro.id}')" title="Eliminar mes"><i class="ti ti-x"></i></button>`
-          :'';
+          :`<button class="icon-btn" onclick="ocultarMes(${p.id},${mes},${anio})" title="Ocultar mes"><i class="ti ti-x"></i></button>`;
         return`<div class="mes-row ${clase}">
           <div class="mes-left">
             <button class="chk-btn${pagado?' pagado':''}" onclick="toggleCobro(${p.id},${mes},${anio})" title="${pagado?'Marcar pendiente':'Marcar pagado'}">
@@ -500,7 +502,10 @@ function renderContenido(){
             <div class="pcard-desde"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
           </div>
         </div>
-        <div class="pcard-body">${mesesHtml}</div>
+        <div class="pcard-body">
+          ${mesesHtml}
+          <button class="btn-add-mes" onclick="agregarMesSiguiente(${p.id})"><i class="ti ti-plus" style="font-size:12px"></i> Agregar mes</button>
+        </div>
         <div class="pcard-footer">
           <button class="foot-btn danger" onclick="eliminarPrestamo(${p.id})"><i class="ti ti-trash" style="font-size:13px"></i> Eliminar</button>
         </div>
@@ -520,16 +525,27 @@ function renderContenido(){
 
 // ── Helpers de meses ────────────────────────────────────────────
 function getMesesPrestamo(p){
+  const ocultos=p.mesesOcultos||[];
+  const esOculto=(m,y)=>ocultos.some(o=>o.mes===m&&o.anio===y);
   const inicio=new Date(p.fecha_inicio+'T00:00:00');
   const hoyDate=new Date();
   let y=inicio.getFullYear(), m=inicio.getMonth()+1;
   const hy=hoyDate.getFullYear(), hm=hoyDate.getMonth()+1;
   const result=[];
   while(y<hy||(y===hy&&m<=hm)){
-    const cobro=(p.cobros||[]).find(c=>c.mes===m&&c.anio===y)||null;
-    result.push({mes:m,anio:y,cobro});
+    if(!esOculto(m,y)){
+      const cobro=(p.cobros||[]).find(c=>c.mes===m&&c.anio===y)||null;
+      result.push({mes:m,anio:y,cobro});
+    }
     m++; if(m>12){m=1;y++;}
   }
+  // Meses futuros agregados manualmente (más allá de hoy)
+  (p.cobros||[]).forEach(c=>{
+    const esFuturo=c.anio>hy||(c.anio===hy&&c.mes>hm);
+    if(esFuturo&&!esOculto(c.mes,c.anio)&&!result.find(r=>r.mes===c.mes&&r.anio===c.anio)){
+      result.push({mes:c.mes,anio:c.anio,cobro:c});
+    }
+  });
   return result;
 }
 
@@ -550,7 +566,40 @@ async function toggleCobro(pid,mes,anio){
 
 async function eliminarCobro(pid,cid){
   const p=S.prestamos.find(x=>x.id===pid);
-  p.cobros=p.cobros.filter(c=>c.id!==cid);
+  const cobro=p.cobros.find(c=>c.id===cid);
+  if(cobro){
+    if(!p.mesesOcultos) p.mesesOcultos=[];
+    p.mesesOcultos.push({mes:cobro.mes,anio:cobro.anio});
+    p.cobros=p.cobros.filter(c=>c.id!==cid);
+  }
+  render();
+  await guardarTodo();
+}
+
+async function ocultarMes(pid,mes,anio){
+  const p=S.prestamos.find(x=>x.id===pid);
+  if(!p.mesesOcultos) p.mesesOcultos=[];
+  p.mesesOcultos.push({mes,anio});
+  render();
+  await guardarTodo();
+}
+
+async function agregarMesSiguiente(pid){
+  const p=S.prestamos.find(x=>x.id===pid);
+  const meses=getMesesPrestamo(p);
+  let nm, ny;
+  if(meses.length){
+    const last=meses[meses.length-1];
+    nm=last.mes+1; ny=last.anio;
+    if(nm>12){nm=1;ny++;}
+  } else {
+    const hoy=new Date();
+    nm=hoy.getMonth()+2; ny=hoy.getFullYear();
+    if(nm>12){nm=1;ny++;}
+  }
+  const dia=diaCobro(p);
+  const fc=ny+'-'+String(nm).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+  p.cobros.push({id:'c'+S.nextId++,mes:nm,anio:ny,monto:p.tasa_mensual,estado:'pendiente',fecha_cobro:fc});
   render();
   await guardarTodo();
 }
