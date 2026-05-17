@@ -104,10 +104,13 @@ function pendientesDia(dia){
 
 // ── Stats ────────────────────────────────────────────────────────
 function calcStats(){
-  let capital=0, cobrado=0, pendiente=0, vencido=0, libre=0;
+  let capital=0, cobrado=0, pendiente=0, vencido=0, libre=0, mensual=0;
+  const hoy = new Date();
+  const hy = hoy.getFullYear(), hm = hoy.getMonth()+1;
   S.prestamos.forEach(p => {
-    capital += p.capital;
-    p.cobros.forEach(c => {
+    capital  += p.capital;
+    mensual  += getCuotaParaMes(p, hm, hy);
+    (p.cobros||[]).forEach(c => {
       if(c.estado === 'pagado')        cobrado   += c.monto;
       else if(c.estado === 'pendiente') pendiente += c.monto;
       else                              vencido   += c.monto;
@@ -117,7 +120,7 @@ function calcStats(){
     const a = (d.asignaciones||[]).reduce((s,x) => s+x.monto, 0);
     libre += d.monto - a;
   });
-  return { capital, cobrado, pendiente, vencido, libre };
+  return { capital, cobrado, pendiente, vencido, libre, mensual };
 }
 
 // ── Render ────────────────────────────────────────────────────────
@@ -146,7 +149,7 @@ function renderSummary(){
   const s = calcStats();
   document.getElementById('summary').innerHTML=`
     <div class="metric"><div class="metric-label">Capital prestado</div><div class="metric-value">${fmt(s.capital)}</div></div>
-    <div class="metric"><div class="metric-label">Intereses cobrados</div><div class="metric-value green">${fmt(s.cobrado)}</div></div>
+    <div class="metric"><div class="metric-label">Intereses al mes</div><div class="metric-value green">${fmt(s.mensual)}</div></div>
     <div class="metric"><div class="metric-label">Por cobrar</div><div class="metric-value amber">${fmt(s.pendiente+s.vencido)}</div></div>
     <div class="metric"><div class="metric-label">Vencido</div><div class="metric-value red">${fmt(s.vencido)}</div></div>
     <div class="metric"><div class="metric-label">Sin asignar</div><div class="metric-value amber">${fmt(s.libre)}</div></div>`;
