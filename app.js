@@ -97,7 +97,7 @@ function prestsFiltrados(){
 
 // ── Stats ────────────────────────────────────────────────────────
 function calcStats(){
-  let capital=0, cobrado=0, pendiente=0, vencido=0, libre=0, mensual=0;
+  let capital=0, cobrado=0, pendiente=0, vencido=0, libre=0, mensual=0, cobradoMes=0, pendienteMes=0;
   const hoy = new Date();
   const hy = hoy.getFullYear(), hm = hoy.getMonth()+1;
   S.prestamos.forEach(p => {
@@ -107,13 +107,17 @@ function calcStats(){
       if(c.estado === 'pagado')        cobrado   += c.monto;
       else if(c.estado === 'pendiente') pendiente += c.monto;
       else                              vencido   += c.monto;
+      if(c.mes === hm && c.anio === hy){
+        if(c.estado === 'pagado') cobradoMes += c.monto;
+        else pendienteMes += c.monto;
+      }
     });
   });
   S.dineroLibre.forEach(d => {
     const a = (d.asignaciones||[]).reduce((s,x) => s+x.monto, 0);
     libre += d.monto - a;
   });
-  return { capital, cobrado, pendiente, vencido, libre, mensual };
+  return { capital, cobrado, pendiente, vencido, libre, mensual, cobradoMes, pendienteMes, hm, hy };
 }
 
 // ── Render ────────────────────────────────────────────────────────
@@ -145,7 +149,21 @@ function renderSummary(){
     <div class="metric"><div class="metric-label">Intereses al mes</div><div class="metric-value green">${fmt(s.mensual)}</div></div>
     <div class="metric"><div class="metric-label">Por cobrar</div><div class="metric-value amber">${fmt(s.pendiente+s.vencido)}</div></div>
     <div class="metric"><div class="metric-label">Vencido</div><div class="metric-value red">${fmt(s.vencido)}</div></div>
-    <div class="metric"><div class="metric-label">Sin asignar</div><div class="metric-value amber">${fmt(s.libre)}</div></div>`;
+    <div class="metric"><div class="metric-label">Sin asignar</div><div class="metric-value amber">${fmt(s.libre)}</div></div>
+    <div class="metric metric-mes">
+      <div class="metric-label">${MESES_N[s.hm-1]} ${s.hy}</div>
+      <div class="metric-mes-row">
+        <div class="metric-mes-item">
+          <div class="metric-mes-sub">Cobrado</div>
+          <div class="metric-value green">${fmt(s.cobradoMes)}</div>
+        </div>
+        <div class="metric-mes-sep"></div>
+        <div class="metric-mes-item">
+          <div class="metric-mes-sub">Falta cobrar</div>
+          <div class="metric-value amber">${fmt(s.pendienteMes)}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderBanner(){
