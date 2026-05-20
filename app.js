@@ -107,11 +107,20 @@ function calcStats(){
       if(c.estado === 'pagado')        cobrado   += c.monto;
       else if(c.estado === 'pendiente') pendiente += c.monto;
       else                              vencido   += c.monto;
-      if(c.mes === hm && c.anio === hy){
-        if(c.estado === 'pagado') cobradoMes += c.monto;
-        else pendienteMes += c.monto;
-      }
     });
+    const ini = new Date(p.fecha_inicio+'T00:00:00');
+    let fcm = ini.getMonth()+2, fcy = ini.getFullYear();
+    if(fcm>12){ fcm=1; fcy++; }
+    const activoEsteMes = hy>fcy || (hy===fcy && hm>=fcm);
+    if(activoEsteMes){
+      const cobroMes = (p.cobros||[]).find(c => c.mes===hm && c.anio===hy);
+      if(cobroMes){
+        if(cobroMes.estado==='pagado') cobradoMes += cobroMes.monto;
+        else pendienteMes += cobroMes.monto;
+      } else {
+        pendienteMes += getCuotaParaMes(p, hm, hy);
+      }
+    }
   });
   S.dineroLibre.forEach(d => {
     const a = (d.asignaciones||[]).reduce((s,x) => s+x.monto, 0);
