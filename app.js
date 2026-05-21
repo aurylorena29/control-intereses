@@ -13,11 +13,32 @@ const COLORES_RESP = [
   {bg:'#FBDADA',text:'#721B1B'},{bg:'#F0E4FB',text:'#6B1B8F'},
 ];
 
+// ── Caché local ──────────────────────────────────────────────────
+const CACHE_KEY = 'ci_v1';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos — ajusta según necesites
+
+function cacheGuardar(d) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({...d, _ts: Date.now()})); } catch {}
+}
+function cacheLeer() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; }
+}
+function cacheEsFresca(c) { return c && c._ts && (Date.now() - c._ts) < CACHE_TTL; }
+function cacheAplicar(c) {
+  S.responsables = c.responsables || [];
+  S.prestamos    = c.prestamos    || [];
+  S.dineroLibre  = c.dineroLibre  || [];
+  S.nextId       = c.nextId       || 1;
+  S.nextDineroId = c.nextDineroId || 1;
+  S.loaded = true;
+}
+
 // ── Estado local ─────────────────────────────────────────────────
 let S = {
   responsables: [], prestamos: [], dineroLibre: [],
   nextId: 1, nextDineroId: 1, tabActivo: 'lista',
   filtroQuincena: 'todos', filtroResp: null, loaded: false,
+  usandoCache: false,
 };
 
 // ── API Google Sheets ─────────────────────────────────────────────
@@ -44,31 +65,58 @@ async function cargarDatos() {
     render();
     return;
   }
-  setSyncStatus('syncing', 'Cargando...');
+
+  const cached = cacheLeer();
+
+  // Cache fresca → render instantáneo, sin llamar a GAS
+  if (cacheEsFresca(cached)) {
+    cacheAplicar(cached);
+    setSyncStatus('ok', 'Datos en caché');
+    render();
+    return;
+  }
+
+  // Cache vieja → mostrar inmediatamente y refrescar en segundo plano
+  if (cached) {
+    cacheAplicar(cached);
+    render();
+    setSyncStatus('syncing', 'Actualizando...');
+  } else {
+    setSyncStatus('syncing', 'Cargando...');
+  }
+
   const data = await apiCall('getData');
   if (data && data.ok) {
     S.responsables = data.responsables || [];
-    S.prestamos    = data.prestamos || [];
-    S.dineroLibre  = data.dineroLibre || [];
-    S.nextId       = data.nextId || 1;
+    S.prestamos    = data.prestamos    || [];
+    S.dineroLibre  = data.dineroLibre  || [];
+    S.nextId       = data.nextId       || 1;
     S.nextDineroId = data.nextDineroId || 1;
     S.loaded = true;
+    S.usandoCache = false;
+    cacheGuardar({ responsables:S.responsables, prestamos:S.prestamos, dineroLibre:S.dineroLibre, nextId:S.nextId, nextDineroId:S.nextDineroId });
     setSyncStatus('ok', 'Sincronizado');
   } else {
-    setSyncStatus('error', 'No se pudo cargar');
+    // GAS falló — usar cache de emergencia si existe (cualquier antigüedad)
+    S.usandoCache = !!cached;
+    if (!cached) setSyncStatus('error', 'No se pudo cargar');
   }
   render();
 }
 
 async function guardarTodo() {
   if (!CONFIG.SCRIPT_URL) return;
-  await apiCall('saveData', {
+  const result = await apiCall('saveData', {
     responsables: S.responsables,
     prestamos:    S.prestamos,
     dineroLibre:  S.dineroLibre,
     nextId:       S.nextId,
     nextDineroId: S.nextDineroId,
   });
+  // Actualizar cache local solo si el guardado fue exitoso
+  if (result && result.ok) {
+    cacheGuardar({ responsables:S.responsables, prestamos:S.prestamos, dineroLibre:S.dineroLibre, nextId:S.nextId, nextDineroId:S.nextDineroId });
+  }
 }
 
 function setSyncStatus(tipo, texto) {
@@ -176,7 +224,17 @@ function renderSummary(){
 }
 
 function renderBanner(){
-  document.getElementById('libre-banner').innerHTML = '';
+  const el = document.getElementById('libre-banner');
+  if (S.usandoCache) {
+    el.innerHTML = `<div class="banner amber" style="margin-bottom:16px">
+      <div>
+        <div class="banner-text"><i class="ti ti-wifi-off" style="vertical-align:-2px;margin-right:5px"></i>Sin conexión con Google Sheets</div>
+        <div class="banner-sub">Mostrando datos guardados localmente · Los cambios no se guardarán hasta reconectar</div>
+      </div>
+    </div>`;
+  } else {
+    el.innerHTML = '';
+  }
 }
 
 function renderDinero(){
