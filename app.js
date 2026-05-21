@@ -264,26 +264,29 @@ function renderDinero(){
 }
 
 function renderTabs(){
-  const quincenas = [
-    {key:'todos',    label:'Todos'},
-    {key:'primera',  label:'1ª quincena'},
-    {key:'segunda',  label:'2ª quincena'},
-  ];
-  const qHtml = quincenas.map(q =>
-    `<button class="chip${S.filtroQuincena===q.key?' active':''}" onclick="setFiltroQuincena('${q.key}')">${q.label}</button>`
-  ).join('');
-  const histHtml = `<button class="chip${S.tabActivo==='historial'?' active':''}" onclick="setTab('historial')"><i class="ti ti-history" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Historial</button>`;
+  const enLista = S.tabActivo !== 'historial';
+  const segHtml = `<div class="seg-ctrl">
+    <button class="seg-btn${enLista && S.filtroQuincena==='todos'  ?' active':''}" onclick="setFiltroQuincena('todos')">Todos</button>
+    <button class="seg-btn${enLista && S.filtroQuincena==='primera'?' active':''}" onclick="setFiltroQuincena('primera')">1ª</button>
+    <button class="seg-btn${enLista && S.filtroQuincena==='segunda'?' active':''}" onclick="setFiltroQuincena('segunda')">2ª</button>
+  </div>`;
 
   const respHtml = S.responsables.length > 1
-    ? '<div class="chips-row resp-chips">' +
-        S.responsables.map(r =>
-          `<button class="chip resp${S.filtroResp===r.id?' active':''}" onclick="setFiltroResp(${r.id})">${r.nombre}</button>`
-        ).join('') +
-      '</div>'
+    ? S.responsables.map((r, ri) => {
+        const c = colorResp(ri);
+        const activo = S.filtroResp === r.id;
+        return `<button class="resp-chip${activo?' active':''}"
+          style="background:${c.bg};color:${c.text};border-color:${activo?c.text:'transparent'}"
+          onclick="setFiltroResp(${r.id})">${r.nombre}</button>`;
+      }).join('')
     : '';
 
+  const histHtml = `<button class="hist-btn${S.tabActivo==='historial'?' active':''}" onclick="setTab('historial')">
+    <i class="ti ti-history" style="font-size:12px"></i> Historial
+  </button>`;
+
   document.getElementById('tabs').innerHTML =
-    `<div class="chips-row">${qHtml}<span class="chips-sep"></span>${histHtml}</div>${respHtml}`;
+    `<div class="filtros-bar">${segHtml}${respHtml}<span class="filtros-gap"></span>${histHtml}</div>`;
 }
 
 function setTab(t){ S.tabActivo=t; S.filtroQuincena='todos'; S.filtroResp=null; renderTabs(); renderContenido(); }

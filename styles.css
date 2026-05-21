@@ -167,15 +167,77 @@ body {
 .btn-asignar { margin-top: 5px; font-size: 11px; font-weight: 600; background: var(--green-mid); color: white; border: none; border-radius: 5px; padding: 3px 9px; cursor: pointer; font-family: inherit; }
 .btn-asignar:hover { background: var(--green); }
 
-/* ─── FILTROS / CHIPS ────────────────────────────────────────── */
+/* ─── FILTROS ────────────────────────────────────────────────── */
 .tabs-wrap { margin-bottom: 16px; }
 .tabs-scroll { display: block; }
-.chips-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-.chips-row.resp-chips { margin-bottom: 0; }
-.chips-sep { flex: 1; }
-.chip {
+
+.filtros-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 1px;
+}
+.filtros-bar::-webkit-scrollbar { display: none; }
+.filtros-gap { flex: 1; }
+
+/* Segmented control (quincenas) */
+.seg-ctrl {
+  display: inline-flex;
+  background: var(--surface2);
+  border-radius: 9px;
+  padding: 2px;
+  gap: 1px;
   flex-shrink: 0;
-  padding: 4px 12px;
+}
+.seg-btn {
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.seg-btn:not(.active):hover { color: var(--text); }
+.seg-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 1px rgba(0,0,0,.06);
+}
+
+/* Responsable chips */
+.resp-chip {
+  flex-shrink: 0;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  letter-spacing: .01em;
+  opacity: .75;
+}
+.resp-chip:hover { opacity: 1; transform: translateY(-1px); }
+.resp-chip.active { opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+
+/* Historial button */
+.hist-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
   border-radius: 20px;
   border: 1px solid var(--border2);
   background: transparent;
@@ -187,10 +249,8 @@ body {
   transition: all .15s;
   white-space: nowrap;
 }
-.chip:hover { background: var(--surface2); color: var(--text); }
-.chip.active { background: var(--text); border-color: var(--text); color: #fff; }
-.chip.resp { border-style: dashed; }
-.chip.resp.active { border-style: solid; }
+.hist-btn:hover { background: var(--surface2); color: var(--text); }
+.hist-btn.active { background: var(--text); border-color: var(--text); color: #fff; }
 
 /* ─── RESPONSABLES ───────────────────────────────────────────── */
 .responsable-block { margin-bottom: 28px; }
