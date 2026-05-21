@@ -202,7 +202,7 @@ body {
 .resp-estado.ok   { color: var(--green); }
 .resp-estado.pend { color: var(--amber-mid); }
 
-.prestamos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(295px, 1fr)); gap: 13px; }
+.prestamos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
 
 /* ─── PRESTAMO CARD ──────────────────────────────────────────── */
 .pcard {
@@ -213,16 +213,16 @@ body {
   overflow: hidden;
 }
 .pcard-head {
-  padding: 14px 15px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: flex-start;
-  gap: 13px;
+  gap: 10px;
 }
 .dia-grande {
-  width: 58px;
-  height: 58px;
-  border-radius: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
   background: transparent;
   border: 1px solid var(--border2);
   color: var(--text);
@@ -232,49 +232,34 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.dia-g-num   { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 700; line-height: 1; }
-.dia-g-label { font-size: 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--text3); margin-top: 3px; }
+.dia-g-num   { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 700; line-height: 1; }
+.dia-g-label { font-size: 7px; text-transform: uppercase; letter-spacing: .05em; color: var(--text3); margin-top: 2px; }
 .pcard-info    { flex: 1; min-width: 0; }
-.pcard-capital { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; }
-.pcard-cuota   { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.pcard-desde   { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.pcard-capital { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 700; }
+.pcard-cuota   { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.pcard-desde   { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+.pcard-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.pcard-btn-cash { color: var(--text3); }
+.pcard-btn-cash:hover { background: var(--green-bg) !important; color: var(--green) !important; }
+.pcard-btn-del { color: var(--text3); opacity: .5; }
+.pcard-btn-del:hover { background: var(--red-bg) !important; color: var(--red-mid) !important; opacity: 1 !important; }
 
 .desembolsos-wrap { margin-top: 5px; display: flex; flex-direction: column; gap: 2px; }
 .desembolso-item  { display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 2px 0; }
 .desembolso-monto { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--text); }
 .desembolso-fecha { color: var(--text3); }
 
-.pcard-body { padding: 10px 13px; }
-
-.pcard-footer { border-top: 1px solid var(--border); display: flex; }
-.foot-btn {
-  flex: 1;
-  padding: 9px;
-  font-size: 12px;
-  font-family: inherit;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--text2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  font-weight: 500;
-  transition: background .12s;
-}
-.foot-btn:hover { background: var(--surface2); color: var(--text); }
-.foot-btn + .foot-btn { border-left: 1px solid var(--border); }
-.foot-btn.danger:hover { color: var(--red-mid); background: var(--red-bg); }
+.pcard-body { padding: 8px 10px; }
 
 /* ─── COBROS (mes rows) ──────────────────────────────────────── */
 .mes-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 9px 6px 11px;
-  border-radius: 7px;
-  margin-bottom: 4px;
+  padding: 4px 7px 4px 9px;
+  border-radius: 6px;
+  margin-bottom: 3px;
   border: 1px solid var(--border);
 }
 .mes-row.pagado    { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
@@ -341,8 +326,8 @@ body {
 
 .btn-add-mes {
   width: 100%;
-  margin-top: 7px;
-  padding: 7px;
+  margin-top: 5px;
+  padding: 5px;
   border: 1px dashed var(--border2);
   border-radius: 7px;
   background: none;

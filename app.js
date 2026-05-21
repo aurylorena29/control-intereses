@@ -204,8 +204,6 @@ function renderSummary(){
   document.getElementById('summary').innerHTML=`
     <div class="metric"><div class="metric-label">Capital prestado</div><div class="metric-value">${fmt(s.capital)}</div></div>
     <div class="metric"><div class="metric-label">Intereses al mes</div><div class="metric-value green">${fmt(s.mensual)}</div></div>
-    <div class="metric"><div class="metric-label">Por cobrar</div><div class="metric-value amber">${fmt(s.pendiente+s.vencido)}</div></div>
-    <div class="metric"><div class="metric-label">Vencido</div><div class="metric-value red">${fmt(s.vencido)}</div></div>
     <div class="metric"><div class="metric-label">Sin asignar</div><div class="metric-value amber">${fmt(s.libre)}</div></div>
     <div class="metric metric-mes">
       <div class="metric-label">${MESES_N[s.hm-1]} ${s.hy}</div>
@@ -362,16 +360,16 @@ function renderContenido(){
             <div class="pcard-capital">${fmt(p.capital)}</div>
             <div class="pcard-cuota">Cuota: ${fmt(p.tasa_mensual)} / mes</div>
             ${desembolsosHtml}
-            <div class="pcard-desde" style="margin-top:4px"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
+            <div class="pcard-desde"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
+          </div>
+          <div class="pcard-actions">
+            <button class="icon-btn pcard-btn-cash" onclick="abrirAgregarCapital(${p.id})" title="Agregar plata"><i class="ti ti-cash"></i></button>
+            <button class="icon-btn pcard-btn-del" onclick="eliminarPrestamo(${p.id})" title="Eliminar préstamo"><i class="ti ti-trash"></i></button>
           </div>
         </div>
         <div class="pcard-body">
           ${mesesHtml}
           <button class="btn-add-mes" onclick="agregarMesSiguiente(${p.id})"><i class="ti ti-plus" style="font-size:12px"></i> Agregar mes</button>
-        </div>
-        <div class="pcard-footer">
-          <button class="foot-btn" onclick="abrirAgregarCapital(${p.id})"><i class="ti ti-cash" style="font-size:13px"></i> Agregar plata</button>
-          <button class="foot-btn danger" onclick="eliminarPrestamo(${p.id})"><i class="ti ti-trash" style="font-size:13px"></i> Eliminar</button>
         </div>
       </div>`;
     }).join('');
