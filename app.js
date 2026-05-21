@@ -309,6 +309,7 @@ function renderContenido(){
     const iniciales= nombre.split(/[\s\/]+/).map(x=>x[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
     const totalPend= ps.reduce((s,p) => s+p.cobros.filter(c=>c.estado!=='pagado').reduce((a,c)=>a+c.monto,0), 0);
 
+    ps.sort((a, b) => diaCobro(a) - diaCobro(b));
     const cards = ps.map(p => {
       const dia = diaCobro(p);
       const meses = getMesesPrestamo(p);
