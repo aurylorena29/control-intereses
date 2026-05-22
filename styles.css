@@ -1,6 +1,6 @@
 /* ─── RESET & VARIABLES ──────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-.metric-value, .banner-val, .dinero-monto, .tab-day, .dia-g-num, .pcard-capital, .desembolso-monto, .mes-monto, .hist-monto, .consig-monto { font-feature-settings: "zero" 0; }
+.metric-value, .banner-val, .dinero-monto, .tab-day, .dia-g-num, .pcard-capital, .pcard-interes, .desembolso-monto, .mes-monto, .hist-monto, .consig-monto { font-feature-settings: "zero" 0; }
 
 :root {
   --bg: #F5F3EE;
@@ -164,8 +164,11 @@ body {
 .dinero-date { font-size: 11px; color: var(--text3); }
 .dinero-right { text-align: right; }
 .dinero-monto { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; color: var(--amber); }
-.btn-asignar { margin-top: 5px; font-size: 11px; font-weight: 600; background: var(--green-mid); color: white; border: none; border-radius: 5px; padding: 3px 9px; cursor: pointer; font-family: inherit; }
+.dinero-btns { display: flex; gap: 5px; margin-top: 5px; justify-content: flex-end; }
+.btn-asignar { font-size: 11px; font-weight: 600; background: var(--green-mid); color: white; border: none; border-radius: 5px; padding: 3px 9px; cursor: pointer; font-family: inherit; }
 .btn-asignar:hover { background: var(--green); }
+.btn-editar-dinero { font-size: 11px; background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); border-radius: 5px; padding: 3px 7px; cursor: pointer; font-family: inherit; display: flex; align-items: center; }
+.btn-editar-dinero:hover { background: var(--blue-bg); color: var(--blue); border-color: #8FBCE8; }
 
 /* ─── FILTROS ────────────────────────────────────────────────── */
 .tabs-wrap { margin-bottom: 16px; }
@@ -294,10 +297,12 @@ body {
 }
 .dia-g-num   { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 700; line-height: 1; }
 .dia-g-label { font-size: 7px; text-transform: uppercase; letter-spacing: .05em; color: var(--text3); margin-top: 2px; }
-.pcard-info    { flex: 1; min-width: 0; }
-.pcard-capital { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 700; }
-.pcard-cuota   { font-size: 11px; color: var(--text2); margin-top: 1px; }
-.pcard-desde   { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.pcard-info         { flex: 1; min-width: 0; }
+.pcard-label        { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); font-weight: 600; margin-bottom: 1px; }
+.pcard-capital      { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; line-height: 1.1; }
+.pcard-interes      { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; color: var(--green-mid); margin-top: 4px; }
+.pcard-interes-label{ font-size: 10px; font-weight: 500; color: var(--text3); font-family: 'IBM Plex Sans', sans-serif; }
+.pcard-desde        { font-size: 11px; color: var(--text2); margin-top: 4px; }
 
 .pcard-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 .pcard-btn-cash { color: var(--text3); }

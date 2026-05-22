@@ -257,7 +257,10 @@ function renderDinero(){
         <div class="dinero-right">
           <div class="dinero-monto">${fmt(saldo)}</div>
           <div style="font-size:10px;color:var(--text3)">de ${fmt(d.monto)}</div>
-          <button class="btn-asignar" onclick="abrirAsignar(${d.id})">Asignar →</button>
+          <div class="dinero-btns">
+            <button class="btn-editar-dinero" onclick="abrirEditarDinero(${d.id})" title="Editar"><i class="ti ti-pencil" style="font-size:11px"></i></button>
+            <button class="btn-asignar" onclick="abrirAsignar(${d.id})">Asignar →</button>
+          </div>
         </div>
       </div>`;
     }).join('')}</div>`;
@@ -361,10 +364,11 @@ function renderContenido(){
             <span class="dia-g-label">c/mes</span>
           </div>
           <div class="pcard-info">
+            <div class="pcard-label">Capital prestado</div>
             <div class="pcard-capital">${fmt(p.capital)}</div>
-            <div class="pcard-cuota">Cuota: ${fmt(p.tasa_mensual)} / mes</div>
+            <div class="pcard-interes">${fmt(p.tasa_mensual)}<span class="pcard-interes-label"> /mes</span></div>
             ${desembolsosHtml}
-            <div class="pcard-desde"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>Desde ${fechaDisp(p.fecha_inicio)}</div>
+            <div class="pcard-desde"><i class="ti ti-calendar-event" style="font-size:10px;vertical-align:-1px;margin-right:3px"></i>${fechaDisp(p.fecha_inicio)}</div>
           </div>
           <div class="pcard-actions">
             <button class="icon-btn pcard-btn-cash" onclick="abrirAgregarCapital(${p.id})" title="Agregar plata"><i class="ti ti-cash"></i></button>
@@ -911,6 +915,46 @@ async function toggleAsig(dineroId, cobroId, pid, montoCobro){
   await guardarTodo();
   abrirAsignar(dineroId);
   render();
+}
+
+// ── Modal: Editar dinero ──────────────────────────────────────────
+function abrirEditarDinero(id){
+  const d = S.dineroLibre.find(x => x.id===id);
+  if(!d) return;
+  const asigT = (d.asignaciones||[]).reduce((s,x) => s+x.monto, 0);
+  const asigHtml = asigT > 0
+    ? `<div class="form-hint" style="margin-bottom:8px">Ya asignado: <strong>${fmt(asigT)}</strong> — el monto no puede ser menor</div>` : '';
+  modal('Editar dinero registrado',
+    `<div class="form-group"><label>Descripción / Quién pagó</label>
+       <input id="ed-desc" type="text" value="${d.desc.replace(/"/g,'&quot;')}" placeholder="Ej: Consignó Paola">
+     </div>
+     <div class="form-row">
+       <div class="form-group"><label>Monto ($)</label>
+         <input id="ed-monto" type="number" value="${d.monto}" placeholder="500000">
+       </div>
+       <div class="form-group"><label>Fecha</label>
+         <input id="ed-fecha" type="date" value="${d.fecha}">
+       </div>
+     </div>${asigHtml}`,
+    `<button class="btn-cancel" onclick="cerrar()">Cancelar</button>
+     <button class="btn-save" onclick="guardarEditarDinero(${id})">Guardar</button>`
+  );
+}
+
+async function guardarEditarDinero(id){
+  const d = S.dineroLibre.find(x => x.id===id);
+  if(!d) return;
+  const desc  = document.getElementById('ed-desc').value.trim();
+  const monto = parseFloat(document.getElementById('ed-monto').value) || 0;
+  const fecha = document.getElementById('ed-fecha').value;
+  if(!monto){ alert('Ingresa el monto'); return; }
+  const asigT = (d.asignaciones||[]).reduce((s,x) => s+x.monto, 0);
+  if(monto < asigT){ alert('El monto no puede ser menor a lo ya asignado ('+fmt(asigT)+')'); return; }
+  d.desc  = desc || 'Sin descripción';
+  d.monto = monto;
+  d.fecha = fecha;
+  cerrar(); render();
+  await guardarTodo();
 }
 
 // ── Init ─────────────────────────────────────────────────────────
