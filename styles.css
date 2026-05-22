@@ -526,6 +526,7 @@ body {
 .btn-save:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ─── ASIGNAR ────────────────────────────────────────────────── */
+.asign-grupo-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text2); padding: 12px 0 6px; border-top: 1px solid var(--border); margin-top: 4px; }
 .asign-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 7px; cursor: pointer; transition: all .15s; }
 .asign-item:hover    { border-color: var(--green-mid); background: rgba(10,94,72,.03); }
 .asign-item.selected { border-color: var(--green-mid); background: rgba(10,94,72,.06); }

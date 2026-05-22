@@ -866,24 +866,41 @@ function abrirAsignar(dineroId){
   const d     = S.dineroLibre.find(x => x.id===dineroId);
   const asigT = (d.asignaciones||[]).reduce((s,x) => s+x.monto, 0);
   const saldo = d.monto - asigT;
-  const opciones = [];
+
+  // Construir opciones desde todos los préstamos/meses, no solo cobros explícitos
+  const grupos = {};
   S.prestamos.forEach(p => {
-    const resp = S.responsables.find(r => r.id===p.responsableId);
-    p.cobros.filter(c => c.estado!=='pagado').forEach(c => {
-      const ya = (d.asignaciones||[]).find(a => a.cobroId===c.id);
-      opciones.push({p, c, resp, ya});
+    const resp   = S.responsables.find(r => r.id===p.responsableId);
+    const nombre = resp ? resp.nombre : 'Sin responsable';
+    getMesesPrestamo(p).forEach(({mes, anio, cobro}) => {
+      if(cobro && cobro.estado === 'pagado') return;
+      const ya    = cobro ? (d.asignaciones||[]).find(a => a.cobroId===cobro.id) : null;
+      const monto = cobro ? cobro.monto : getCuotaParaMes(p, mes, anio);
+      if(!grupos[nombre]) grupos[nombre] = [];
+      grupos[nombre].push({p, cobro, resp, ya, mes, anio, monto});
     });
   });
-  const opHtml = opciones.length ? opciones.map(o => `
-    <div class="asign-item${o.ya?' selected':''}" onclick="toggleAsig(${dineroId},'${o.c.id}',${o.p.id},${o.c.monto})">
-      <div>
-        <div class="asign-name">${o.resp?o.resp.nombre:''} — ${o.p.desc}</div>
-        <div class="asign-sub">${MESES_N[o.c.mes-1]} ${o.c.anio} · ${o.c.estado}</div>
-        ${o.ya?`<div style="font-size:11px;color:var(--green);font-weight:600">Asignado: ${fmt(o.ya.monto)}</div>`:''}
-      </div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">${fmt(o.c.monto)}</div>
-    </div>`).join('')
+
+  const tieneOpciones = Object.keys(grupos).length > 0;
+  const opHtml = tieneOpciones
+    ? Object.entries(grupos).map(([nombre, items], gi) => {
+        const labelStyle = gi === 0 ? 'padding-top:0;border-top:none' : '';
+        const rows = items.map(o => {
+          const cid = o.cobro ? `'${o.cobro.id}'` : 'null';
+          const cls = o.ya ? ' selected' : '';
+          return `<div class="asign-item${cls}" onclick="toggleAsig(${dineroId},${cid},${o.p.id},${o.monto},${o.mes},${o.anio})">
+            <div>
+              <div class="asign-name">${MESES_N[o.mes-1]} ${o.anio}</div>
+              <div class="asign-sub">${fmt(o.monto)} · ${o.cobro ? o.cobro.estado : 'pendiente'}</div>
+              ${o.ya ? `<div style="font-size:11px;color:var(--green);font-weight:600">Asignado: ${fmt(o.ya.monto)}</div>` : ''}
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">${fmt(o.monto)}</div>
+          </div>`;
+        }).join('');
+        return `<div class="asign-grupo-label" style="${labelStyle}">${nombre}</div>${rows}`;
+      }).join('')
     : '<div style="font-size:13px;color:var(--text3);padding:8px 0">No hay cobros pendientes</div>';
+
   modal('Asignar dinero a un cobro',`
     <div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:10px 13px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;color:var(--amber);font-weight:500">${d.desc}</span>
@@ -895,8 +912,21 @@ function abrirAsignar(dineroId){
   );
 }
 
-async function toggleAsig(dineroId, cobroId, pid, montoCobro){
-  const d   = S.dineroLibre.find(x => x.id===dineroId);
+async function toggleAsig(dineroId, cobroId, pid, montoCobro, mes, anio){
+  const d = S.dineroLibre.find(x => x.id===dineroId);
+
+  // Si no existe el cobro aún, crearlo automáticamente
+  if(!cobroId){
+    const p = S.prestamos.find(x => x.id===pid);
+    if(!p) return;
+    const dia = diaCobro(p);
+    const fc  = anio+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+    const nuevo = {id:'c'+S.nextId++, mes, anio, monto:getCuotaParaMes(p,mes,anio), estado:'pendiente', fecha_cobro:fc};
+    p.cobros.push(nuevo);
+    cobroId    = nuevo.id;
+    montoCobro = nuevo.monto;
+  }
+
   const idx = (d.asignaciones||[]).findIndex(a => a.cobroId===cobroId);
   if(idx >= 0){
     d.asignaciones.splice(idx, 1);
