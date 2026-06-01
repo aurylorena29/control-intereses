@@ -321,7 +321,7 @@ function renderContenido(){
       const meses = getMesesPrestamo(p);
       const mesesHtml = meses.map(({mes,anio,cobro}) => {
         const pagado  = cobro && cobro.estado === 'pagado';
-        const asignado= cobro ? getAsignadoACobro(cobro.id) : 0;
+        const asignado= cobro ? getMontoPagadoCobro(cobro) : 0;
         const parcial = cobro && !pagado && asignado > 0;
         const clase   = pagado ? 'pagado' : parcial ? 'parcial' : cobro ? cobro.estado : 'sin-cobro';
         const monto   = cobro ? cobro.monto : getCuotaParaMes(p, mes, anio);
@@ -338,7 +338,7 @@ function renderContenido(){
           : `<span class="mes-monto">${fmt(monto)}</span>`;
         return `<div class="mes-row ${clase}">
           <div class="mes-left">
-            <button class="chk-btn${chkClass}" onclick="toggleCobro(${p.id},${mes},${anio})" title="${pagado?'Marcar pendiente':'Marcar pagado'}">${chkIcon}</button>
+            <button class="chk-btn${chkClass}" onclick="toggleCobro(${p.id},${mes},${anio})" title="${pagado?'Deshacer pago':'Registrar pago'}">${chkIcon}</button>
             <span class="mes-name">${MESES_C[mes-1]} ${anio}</span>
           </div>
           <div class="mes-right">
@@ -399,6 +399,11 @@ function getAsignadoACobro(cobroId){
   S.dineroLibre.forEach(d => (d.asignaciones||[]).forEach(a => { if(a.cobroId===cobroId) total+=a.monto; }));
   return total;
 }
+function getMontoPagadoCobro(cobro){
+  const directo  = (cobro.pagos||[]).reduce((s,p) => s+p.monto, 0);
+  const asignado = getAsignadoACobro(cobro.id);
+  return directo + asignado;
+}
 
 // ── Historial ────────────────────────────────────────────────────
 function renderHistorial(){
@@ -408,7 +413,7 @@ function renderHistorial(){
     const resp   = S.responsables.find(r => r.id===p.responsableId);
     const nombre = resp ? resp.nombre : 'Sin responsable';
     p.cobros.forEach(c => {
-      const asignado = getAsignadoACobro(c.id);
+      const asignado = getMontoPagadoCobro(c);
       const parcial  = c.estado !== 'pagado' && asignado > 0;
       eventos.push({ tipo:'cobro', fecha:c.fecha_cobro, mes:c.mes, anio:c.anio,
         monto:c.monto, estado:parcial?'parcial':c.estado, asignado, responsable:nombre });
@@ -522,13 +527,60 @@ function getMesesPrestamo(p){
 async function toggleCobro(pid, mes, anio){
   const p     = S.prestamos.find(x => x.id===pid);
   const cobro = (p.cobros||[]).find(c => c.mes===mes && c.anio===anio);
-  if(cobro){
-    cobro.estado = cobro.estado==='pagado' ? 'pendiente' : 'pagado';
+  if(cobro && cobro.estado === 'pagado'){
+    cobro.estado = 'pendiente';
+    cobro.pagos  = [];
+    render();
+    await guardarTodo();
   } else {
+    abrirRegistrarPago(pid, mes, anio);
+  }
+}
+
+function abrirRegistrarPago(pid, mes, anio){
+  const p       = S.prestamos.find(x => x.id===pid);
+  const cobro   = (p.cobros||[]).find(c => c.mes===mes && c.anio===anio);
+  const monto   = cobro ? cobro.monto : getCuotaParaMes(p, mes, anio);
+  const pagado  = cobro ? getMontoPagadoCobro(cobro) : 0;
+  const falta   = monto - pagado;
+  const hoy     = new Date().toISOString().split('T')[0];
+  const infoPagado = pagado > 0
+    ? `<div style="font-size:12px;color:var(--green-mid);margin-top:4px">Ya registrado: ${fmt(pagado)} · Falta: ${fmt(falta)}</div>`
+    : '';
+  modal(`Registrar pago — ${MESES_N[mes-1]} ${anio}`,
+    `<div style="background:var(--surface2);border-radius:7px;padding:10px 13px;margin-bottom:14px;font-size:13px">
+       <span>Total del mes: <strong style="font-family:'IBM Plex Mono',monospace">${fmt(monto)}</strong></span>
+       ${infoPagado}
+     </div>
+     <div class="form-group">
+       <label>Monto pagado ($)</label>
+       <input id="rp-monto" type="number" placeholder="${falta}" value="${falta}">
+     </div>
+     <div class="form-group">
+       <label>Fecha del pago</label>
+       <input id="rp-fecha" type="date" value="${hoy}">
+     </div>`,
+    `<button class="btn-cancel" onclick="cerrar()">Cancelar</button>
+     <button class="btn-save" onclick="guardarPago(${pid},${mes},${anio})">Registrar pago</button>`
+  );
+}
+
+async function guardarPago(pid, mes, anio){
+  const montoPagado = parseFloat(document.getElementById('rp-monto').value) || 0;
+  const fecha       = document.getElementById('rp-fecha').value;
+  if(!montoPagado){ alert('Ingresa el monto pagado'); return; }
+  const p = S.prestamos.find(x => x.id===pid);
+  let cobro = (p.cobros||[]).find(c => c.mes===mes && c.anio===anio);
+  if(!cobro){
     const dia = diaCobro(p);
     const fc  = anio+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
-    p.cobros.push({id:'c'+S.nextId++, mes, anio, monto:getCuotaParaMes(p,mes,anio), estado:'pagado', fecha_cobro:fc});
+    cobro = {id:'c'+S.nextId++, mes, anio, monto:getCuotaParaMes(p,mes,anio), estado:'pendiente', fecha_cobro:fc, pagos:[]};
+    p.cobros.push(cobro);
   }
+  if(!cobro.pagos) cobro.pagos = [];
+  cobro.pagos.push({id:'pago'+S.nextId++, monto:montoPagado, fecha});
+  if(getMontoPagadoCobro(cobro) >= cobro.monto) cobro.estado = 'pagado';
+  cerrar();
   render();
   await guardarTodo();
 }
