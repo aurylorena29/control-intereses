@@ -428,6 +428,7 @@ body {
 .hist-icon.pendiente { background: rgba(201,125,10,.08); color: var(--amber-mid); }
 .hist-icon.vencido   { background: rgba(192,48,48,.08);  color: var(--red-mid); }
 .hist-icon.ingreso   { background: rgba(26,122,175,.08); color: #1A7AAF; }
+.hist-icon.saldado   { background: rgba(10,94,72,.12);   color: var(--green); }
 
 .hist-info  { flex: 1; min-width: 0; }
 .hist-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -448,6 +449,7 @@ body {
 .hist-badge.pendiente { background: rgba(201,125,10,.08); color: var(--amber); }
 .hist-badge.vencido   { background: rgba(192,48,48,.08);  color: var(--red); }
 .hist-badge.ingreso   { background: rgba(26,122,175,.08); color: #1A7AAF; }
+.hist-badge.saldado   { background: rgba(10,94,72,.12);   color: var(--green); }
 
 /* ─── MODAL & FORMS ──────────────────────────────────────────── */
 .overlay {

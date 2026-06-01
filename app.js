@@ -136,7 +136,7 @@ function diaCobro(p)  { return parseInt(p.fecha_inicio.split('-')[2]); }
 function colorResp(idx){ return COLORES_RESP[idx % COLORES_RESP.length]; }
 
 function prestsFiltrados(){
-  let list = S.prestamos;
+  let list = S.prestamos.filter(p => !p.saldado);
   if(S.filtroQuincena === 'primera') list = list.filter(p => diaCobro(p) <= 15);
   if(S.filtroQuincena === 'segunda') list = list.filter(p => diaCobro(p) > 15);
   if(S.filtroResp !== null) list = list.filter(p => p.responsableId === S.filtroResp);
@@ -148,7 +148,7 @@ function calcStats(){
   let capital=0, cobrado=0, pendiente=0, vencido=0, libre=0, mensual=0, cobradoMes=0, pendienteMes=0;
   const hoy = new Date();
   const hy = hoy.getFullYear(), hm = hoy.getMonth()+1;
-  S.prestamos.forEach(p => {
+  S.prestamos.filter(p => !p.saldado).forEach(p => {
     capital  += p.capital;
     mensual  += getCuotaParaMes(p, hm, hy);
     (p.cobros||[]).forEach(c => {
@@ -372,7 +372,7 @@ function renderContenido(){
           </div>
           <div class="pcard-actions">
             <button class="icon-btn pcard-btn-cash" onclick="abrirAgregarCapital(${p.id})" title="Agregar plata"><i class="ti ti-cash"></i></button>
-            <button class="icon-btn pcard-btn-del" onclick="eliminarPrestamo(${p.id})" title="Eliminar préstamo"><i class="ti ti-trash"></i></button>
+            <button class="icon-btn pcard-btn-del" onclick="abrirSaldarPrestamo(${p.id})" title="Marcar deuda como saldada"><i class="ti ti-circle-check"></i></button>
           </div>
         </div>
         <div class="pcard-body">
@@ -419,6 +419,13 @@ function renderHistorial(){
     eventos.push({ tipo:'ingreso', fecha:d.fecha, mes:parseInt(partes[1]), anio:parseInt(partes[0]),
       monto:d.monto, desc:d.desc, asignaciones:d.asignaciones||[] });
   });
+  S.prestamos.filter(p => p.saldado && p.fecha_saldo).forEach(p => {
+    const resp   = S.responsables.find(r => r.id===p.responsableId);
+    const nombre = resp ? resp.nombre : 'Sin responsable';
+    const partes = p.fecha_saldo.split('-');
+    eventos.push({ tipo:'saldado', fecha:p.fecha_saldo, mes:parseInt(partes[1]), anio:parseInt(partes[0]),
+      responsable:nombre, capital:p.capital });
+  });
   if(!eventos.length){
     el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Sin historial registrado</div>';
     return;
@@ -443,6 +450,17 @@ function renderHistorial(){
           <div class="hist-right">
             <span class="hist-monto ${e.estado}">${fmt(e.monto)}</span>
             <span class="hist-badge ${e.estado}">${e.estado.charAt(0).toUpperCase()+e.estado.slice(1)}</span>
+          </div>
+        </div>`;
+      } else if(e.tipo === 'saldado'){
+        return `<div class="hist-row">
+          <div class="hist-icon saldado"><i class="ti ti-circle-check"></i></div>
+          <div class="hist-info">
+            <div class="hist-title">${e.responsable}</div>
+            <div class="hist-sub">Deuda saldada · Capital: ${fmt(e.capital)}</div>
+          </div>
+          <div class="hist-right">
+            <span class="hist-badge saldado">Saldada</span>
           </div>
         </div>`;
       } else {
@@ -565,9 +583,32 @@ async function marcarPagado(pid, cid){
   await guardarTodo();
 }
 
-async function eliminarPrestamo(id){
-  if(!confirm('¿Eliminar este préstamo?')) return;
-  S.prestamos = S.prestamos.filter(x => x.id!==id);
+function abrirSaldarPrestamo(id){
+  const p   = S.prestamos.find(x => x.id===id);
+  const hoy = new Date().toISOString().split('T')[0];
+  const resp = S.responsables.find(r => r.id===p.responsableId);
+  modal('Marcar deuda como saldada',
+    `<p style="font-size:13px;color:var(--text2);margin-bottom:14px">
+      La deuda de <strong>${resp ? resp.nombre : 'Sin responsable'}</strong> quedará registrada como saldada
+      con la fecha indicada y dejará de aparecer en la página principal. Puedes consultarla en el Historial.
+    </p>
+    <div class="form-group">
+      <label>Fecha del pago final</label>
+      <input id="saldar-fecha" type="date" value="${hoy}">
+    </div>`,
+    `<button class="btn-cancel" onclick="cerrar()">Cancelar</button>
+     <button class="btn-save" onclick="confirmarSaldar(${id})">Marcar como saldada</button>`
+  );
+}
+
+async function confirmarSaldar(id){
+  const fecha = document.getElementById('saldar-fecha').value;
+  if(!fecha){ alert('Selecciona la fecha del pago'); return; }
+  const p = S.prestamos.find(x => x.id===id);
+  if(!p) return;
+  p.saldado    = true;
+  p.fecha_saldo = fecha;
+  cerrar();
   render();
   await guardarTodo();
 }
@@ -985,6 +1026,102 @@ async function guardarEditarDinero(id){
   d.fecha = fecha;
   cerrar(); render();
   await guardarTodo();
+}
+
+// ── Reporte ───────────────────────────────────────────────────────
+function generarReporte(){
+  const hoy     = new Date();
+  const fechaStr= `${hoy.getDate()}/${hoy.getMonth()+1}/${hoy.getFullYear()}`;
+  let totalCobrado=0, totalPendiente=0;
+
+  const bloques = S.responsables.map(resp => {
+    const prestamos = S.prestamos.filter(p => p.responsableId===resp.id);
+    if(!prestamos.length) return '';
+    let respCobrado=0, respPendiente=0;
+
+    const prestHtml = prestamos.map(p => {
+      let mesesData;
+      if(p.saldado){
+        mesesData = (p.cobros||[]).sort((a,b) => a.anio!==b.anio?a.anio-b.anio:a.mes-b.mes)
+          .map(c => ({mes:c.mes, anio:c.anio, cobro:c, monto:c.monto}));
+      } else {
+        mesesData = getMesesPrestamo(p).map(({mes,anio,cobro}) =>
+          ({mes, anio, cobro, monto:cobro?cobro.monto:getCuotaParaMes(p,mes,anio)}));
+      }
+      let pCobrado=0, pPendiente=0;
+      const rows = mesesData.map(({mes,anio,cobro,monto}) => {
+        const estado = cobro ? cobro.estado : 'pendiente';
+        if(estado==='pagado') pCobrado+=monto; else pPendiente+=monto;
+        const label = estado==='pagado'?'✓ Pagado':estado==='vencido'?'Vencido':'Pendiente';
+        const color = estado==='pagado'?'#0A5E48':estado==='vencido'?'#C03030':'#C97D0A';
+        const fecha = cobro&&cobro.fecha_cobro?fechaDisp(cobro.fecha_cobro):'—';
+        return`<tr><td>${MESES_N[mes-1]} ${anio}</td><td style="text-align:right">$${Math.round(monto).toLocaleString('es-CO')}</td><td style="color:${color};font-weight:600">${label}</td><td>${fecha}</td></tr>`;
+      }).join('');
+      respCobrado+=pCobrado; respPendiente+=pPendiente;
+      const estadoBadge = p.saldado
+        ?`<span style="color:#0A5E48;font-weight:600">✓ Saldada el ${fechaDisp(p.fecha_saldo)}</span>`
+        :`<span style="color:#C97D0A;font-weight:600">Activa</span>`;
+      const subTotales = `<span style="color:#0A5E48">Cobrado: $${Math.round(pCobrado).toLocaleString('es-CO')}</span>`
+        +(pPendiente>0?`<span style="color:#C97D0A;margin-left:16px">Pendiente: $${Math.round(pPendiente).toLocaleString('es-CO')}</span>`:'');
+      return`<div style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <span style="font-weight:600">Capital: $${Math.round(p.capital).toLocaleString('es-CO')} &nbsp;·&nbsp; <span style="font-weight:400;color:#6E6B65">Tasa: ${p.tasa_pct||2}% · Desde: ${fechaDisp(p.fecha_inicio)}</span></span>
+          ${estadoBadge}
+        </div>
+        ${rows?`<table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#f0ede6">
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Mes</th>
+            <th style="text-align:right;padding:6px 10px;border-bottom:1px solid #ddd">Interés</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Estado</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Fecha cobro</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr style="background:#f5f3ee;font-weight:600">
+            <td colspan="4" style="padding:7px 10px;border-top:2px solid #ccc">${subTotales}</td>
+          </tr></tfoot>
+        </table>`:'<p style="font-size:13px;color:#A8A49E">Sin cobros registrados</p>'}
+      </div>`;
+    }).join('');
+
+    totalCobrado+=respCobrado; totalPendiente+=respPendiente;
+    return`<div style="margin-bottom:32px">
+      <h2 style="font-size:15px;font-weight:700;padding:8px 0;border-bottom:2px solid #1A1814;margin-bottom:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <span>${resp.nombre}</span>
+        <span style="font-size:13px;font-weight:400">
+          <span style="color:#0A5E48">Cobrado: $${Math.round(respCobrado).toLocaleString('es-CO')}</span>
+          ${respPendiente>0?`<span style="color:#C97D0A;margin-left:16px">Pendiente: $${Math.round(respPendiente).toLocaleString('es-CO')}</span>`:''}
+        </span>
+      </h2>
+      ${prestHtml}
+    </div>`;
+  }).filter(Boolean).join('');
+
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte de Intereses</title>
+  <style>
+    body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1A1814;max-width:820px;margin:0 auto;padding:30px 20px;font-size:14px;line-height:1.5}
+    h1{font-size:21px;margin-bottom:4px}
+    .sub{color:#6E6B65;font-size:13px;margin-bottom:24px}
+    .resumen{background:#f0ede6;border-radius:8px;padding:16px 20px;margin-bottom:30px;display:flex;gap:32px;flex-wrap:wrap}
+    .res-item label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#6E6B65;display:block;margin-bottom:4px}
+    .res-item .val{font-size:19px;font-weight:700;font-family:'Courier New',monospace}
+    table td,table th{padding:6px 10px;border-bottom:1px solid #e8e5de}
+    .btn-print{background:#1A1814;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:14px;cursor:pointer;margin-bottom:24px}
+    @media print{.no-print{display:none!important}body{padding:10px}}
+  </style></head><body>
+  <button class="btn-print no-print" onclick="window.print()"><i>⬇</i> Imprimir / Guardar PDF</button>
+  <h1>Reporte de Intereses</h1>
+  <div class="sub">Generado el ${fechaStr}</div>
+  <div class="resumen">
+    <div class="res-item"><label>Total cobrado</label><div class="val" style="color:#0A5E48">$${Math.round(totalCobrado).toLocaleString('es-CO')}</div></div>
+    <div class="res-item"><label>Total pendiente</label><div class="val" style="color:#C97D0A">$${Math.round(totalPendiente).toLocaleString('es-CO')}</div></div>
+    <div class="res-item"><label>Total intereses generados</label><div class="val">$${Math.round(totalCobrado+totalPendiente).toLocaleString('es-CO')}</div></div>
+  </div>
+  ${bloques||'<p style="color:#A8A49E">Sin datos registrados</p>'}
+  </body></html>`;
+
+  const w = window.open('','_blank');
+  if(w){ w.document.write(html); w.document.close(); }
+  else alert('Activa los popups del navegador para generar el reporte');
 }
 
 // ── Init ─────────────────────────────────────────────────────────
